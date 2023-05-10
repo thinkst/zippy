@@ -72,10 +72,13 @@ class LzmaLlmDetector:
             determination = 'Human'
         return (determination, abs(delta * 100))
         
+def run_on_file(filename : str) -> Optional[Tuple[str, float]]:
+    with open(filename, 'r') as fp:
+        l = LzmaLlmDetector(PRELUDE_FILE)
+        return l.score_text(fp.read())    
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("sample_file", help='Text file containing the sample to classify')
     args = parser.parse_args()
-    with open(args.sample_file, 'r') as fp:
-        l = LzmaLlmDetector(PRELUDE_FILE)
-        print(str(l.score_text(fp.read())))
+    print(str(run_on_file(args.sample_file)))
