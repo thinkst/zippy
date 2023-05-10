@@ -1,0 +1,11 @@
+Modern techniques for modern systems
+Work in this theme showcases both offensive and defensive research against modern systems, protocols, or environments. Expect to see post-quantum cryptography, Web3 weaknesses, and large language model (LLM) generative AI attacks featured.
+
+New attacks, new defences
+This theme looks at novel attack classes targeting rich environments, from server-side prototype pollution, abusing exception handlers, and a way to use Wi-Fi power management as a way to leak sensitive data. On the defensive side, we highlight a new mitigation specifically protecting the usage of system calls.
+
+Stepping back to gain perspective
+Talks in this theme explore how larger, non-technical research can influence technical direction. This theme includes new European Union regulation on end-to-end encryption, user studies of which users are the most at risk, and a legend stepping back to discuss the process of security research as a target for optimisation.
+
+Nifty sundries
+As always, there was top notch work presented or published in this quarter that didn’t fit into the aforementioned themes, but are still worth showcasing. This quarter features a crypto[graphy] attack finding evidence of a crypto[currency] heist, the use of security tooling for performance gains, and new tooling to improve reverse engineering and vulnerability discovery.
