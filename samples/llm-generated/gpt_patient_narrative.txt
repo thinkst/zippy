@@ -1,0 +1,12 @@
+Patient is a 35-year-old female who presents to the clinic complaining of a persistent cough and shortness of breath for the past two weeks. The patient reports that the symptoms 
+have been worsening and she is having difficulty sleeping due to the cough. The patient also reports that she has lost her sense of smell and taste. The patient denies any fever, chills, 
+chest pain, or gastrointestinal symptoms.
+
+The patient's medical history is significant for asthma, for which she uses an albuterol inhaler as needed. She has no other known medical problems and takes no other medications.
+
+On physical examination, the patient appears comfortable and in no distress. Lung examination reveals clear breath sounds with minimal wheezing. The patient's oxygen saturation is 96% on room air. 
+The rest of the examination is within normal limits.
+
+Based on the patient's symptoms and history, the provider suspects that the patient may have a respiratory infection, such as COVID-19. The provider orders a COVID-19 PCR test and advises the 
+patient to self-quarantine until the test results are available. The provider also prescribes an antibiotic and a bronchodilator to help alleviate the patient's symptoms. The provider advises the 
+patient to follow up with the clinic if her symptoms worsen or if she develops any new symptoms.
