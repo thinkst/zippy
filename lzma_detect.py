@@ -4,9 +4,10 @@
 # (C) 2023 Thinkst Applied Research, PTY
 # Author: Jacob Torrey <jacob@thinkst.com>
 
-import lzma
+import lzma, argparse
 from typing import List, Optional, Tuple
 
+# The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
 
 class LzmaLlmDetector:
@@ -64,10 +65,17 @@ class LzmaLlmDetector:
         if self.prelude_ratio == 0.0:
             return None
         (prelude_score, sample_score) = self.get_compression_ratio(sample)
-        print(str((prelude_score, sample_score)))
+        #print(str((prelude_score, sample_score)))
         delta = prelude_score - sample_score
         determination = 'AI'
         if delta < 0 or round(delta, self.FUZZINESS_THRESHOLD) == 0:
             determination = 'Human'
         return (determination, abs(delta * 100))
         
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("sample_file", help='Text file containing the sample to classify')
+    args = parser.parse_args()
+    with open(args.sample_file, 'r') as fp:
+        l = LzmaLlmDetector(PRELUDE_FILE)
+        print(str(l.score_text(fp.read())))
