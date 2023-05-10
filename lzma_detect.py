@@ -4,7 +4,7 @@
 # (C) 2023 Thinkst Applied Research, PTY
 # Author: Jacob Torrey <jacob@thinkst.com>
 
-import lzma, argparse
+import lzma, argparse, os
 from typing import List, Optional, Tuple
 
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
@@ -70,15 +70,20 @@ class LzmaLlmDetector:
         determination = 'AI'
         if delta < 0 or round(delta, self.FUZZINESS_THRESHOLD) == 0:
             determination = 'Human'
+        if abs(delta * 100) < .1 and determination == 'AI':
+            print("Very low-confidence determination of: " + determination)
         return (determination, abs(delta * 100))
         
-def run_on_file(filename : str) -> Optional[Tuple[str, float]]:
+def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
     with open(filename, 'r') as fp:
-        l = LzmaLlmDetector(PRELUDE_FILE)
+        l = LzmaLlmDetector(PRELUDE_FILE, fuzziness)
         return l.score_text(fp.read())    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("sample_file", help='Text file containing the sample to classify')
+    parser.add_argument("sample_files", nargs='+', help='Text file(s) containing the sample to classify')
     args = parser.parse_args()
-    print(str(run_on_file(args.sample_file)))
+    for f in args.sample_files:
+        print(f)
+        if os.path.isfile(f):
+            print(str(run_on_file(f)))

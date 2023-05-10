@@ -1,0 +1,6 @@
+This is the first attempt, using the LZMA compression ratios as a way to indirectly measure the perplexity of a text. Compression ratios have been used in the past to detect anomalies 
+in network data for intrusion detection, so if perplexity is roughly a measure of anomalous tokens, it may be possible to use compression to detect low-perplexity text. LZMA creates 
+a dictionary of seen tokens, and then uses though in place of future tokens. The dictionary size, token length, etc. are all dynamic (though influenced by the 'preset' of 0-9--with 0 
+being the fastest but worse compression than 9). The basic idea is to 'seed' an LZMA compression stream with a corpus of AI-generated text (ai-generated.txt) and then measure the 
+compression ratio of just the seed data with that of the sample appended. Samples that follow more closely in word choice, structure, etc. will acheive a higher compression ratio due 
+to the prevalence of similar tokens in the dictionary, novel words, structures, etc. will appear anomalous to the seeded dictionary, resulting in a worse compression ratio.
