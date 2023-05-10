@@ -70,14 +70,50 @@ class LzmaLlmDetector:
         determination = 'AI'
         if delta < 0 or round(delta, self.FUZZINESS_THRESHOLD) == 0:
             determination = 'Human'
-        if abs(delta * 100) < .1 and determination == 'AI':
-            print("Very low-confidence determination of: " + determination)
+        #if abs(delta * 100) < .1 and determination == 'AI':
+        #    print("Very low-confidence determination of: " + determination)
         return (determination, abs(delta * 100))
         
 def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
+    '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
     with open(filename, 'r') as fp:
         l = LzmaLlmDetector(PRELUDE_FILE, fuzziness)
-        return l.score_text(fp.read())    
+        txt = fp.read()
+        #print('Calculating score for input of length ' + str(len(txt)))
+        return l.score_text(txt)
+
+def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
+    '''
+    Given a filename (and an optional chunk size and number of decimal places to round to) returns the score for the contents of that file.
+    This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
+    being skewed because its compression ratio starts to overwhelm the prelude file.
+    '''
+    with open(filename, 'r') as fp:
+        contents = fp.read()
+    start = 0
+    end = 0
+    chunks = []
+    while start + chunk_size < len(contents) and end != -1:
+        end = contents.rfind(' ', start, start + chunk_size + 1)
+        chunks.append(contents[start:end])
+        start = end + 1
+    chunks.append(contents[start:])
+    scores = []
+    for c in chunks:
+        l = LzmaLlmDetector(PRELUDE_FILE, fuzziness)
+        scores.append(l.score_text(c))
+    ssum : float = 0.0
+    for s in scores:
+        if s[0] == 'AI':
+            ssum -= s[1]
+        else:
+            ssum += s[1]
+    sa : float = ssum / len(scores)
+    if sa < 0:
+        return ('AI', abs(sa))
+    else:
+        return ('Human', abs(sa))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -86,4 +122,4 @@ if __name__ == '__main__':
     for f in args.sample_files:
         print(f)
         if os.path.isfile(f):
-            print(str(run_on_file(f)))
+            print(str(run_on_file_chunked(f)))
