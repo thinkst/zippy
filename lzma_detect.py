@@ -5,20 +5,25 @@
 # Author: Jacob Torrey <jacob@thinkst.com>
 
 import lzma, argparse, os
+import re
 from typing import List, Optional, Tuple
 
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
+with open(PRELUDE_FILE, 'r') as fp:
+    PRELUDE_STR = fp.read()
 
 class LzmaLlmDetector:
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
-    def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3) -> None:
+    def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
-        self.comp = lzma.LZMACompressor()
+        self.PRESET : int = 0
+        self.comp = lzma.LZMACompressor(preset=self.PRESET)
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
         self.prelude_ratio : float = 0.0
         self.FUZZINESS_THRESHOLD = fuzziness_digits
+        self.SHORT_SAMPLE_THRESHOLD : int = 350 # What sample length is considered "short"
 
         if prelude_file != None:
             # Read it once to get the default compression ratio for the prelude
@@ -26,9 +31,15 @@ class LzmaLlmDetector:
                 self._compress_str(fp.read())
             self.prelude_ratio = self._finalize()
             # Redo this to prime the compressor
-            self.comp = lzma.LZMACompressor()
+            self.comp = lzma.LZMACompressor(preset=self.PRESET)
             with open(prelude_file, 'r') as fp:
                 self._compress_str(fp.read())
+
+        if prelude_str != None:
+            self._compress_str(prelude_str)
+            self.prelude_ratio = self._finalize()
+            self.comp = lzma.LZMACompressor(preset=self.PRESET)
+            self._compress_str(prelude_str)
     
     def _compress_str(self, s : str) -> None:
         '''
@@ -68,7 +79,15 @@ class LzmaLlmDetector:
         #print(str((prelude_score, sample_score)))
         delta = prelude_score - sample_score
         determination = 'AI'
-        if delta < 0 or round(delta, self.FUZZINESS_THRESHOLD) == 0:
+        if delta < 0:
+            determination = 'Human'
+
+        # If the sample doesn't 'move the needle', it's very close
+        if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) >= self.SHORT_SAMPLE_THRESHOLD:
+            #print('Sample len to default to AI: ' + str(len(sample)))
+            determination = 'AI'
+        if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) < self.SHORT_SAMPLE_THRESHOLD:
+            #print('Sample len to default to Human: ' + str(len(sample)))
             determination = 'Human'
         #if abs(delta * 100) < .1 and determination == 'AI':
         #    print("Very low-confidence determination of: " + determination)
@@ -90,6 +109,13 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int
     '''
     with open(filename, 'r') as fp:
         contents = fp.read()
+    
+    # Remove extra spaces and duplicate newlines.
+    contents = re.sub(' +', ' ', contents)
+    contents = re.sub('\t', '', contents)
+    contents = re.sub('\n+', '\n', contents)
+    contents = re.sub('\n ', '\n', contents)
+
     start = 0
     end = 0
     chunks = []
@@ -100,7 +126,7 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int
     chunks.append(contents[start:])
     scores = []
     for c in chunks:
-        l = LzmaLlmDetector(PRELUDE_FILE, fuzziness)
+        l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR)
         scores.append(l.score_text(c))
     ssum : float = 0.0
     for s in scores:
@@ -119,6 +145,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("sample_files", nargs='+', help='Text file(s) containing the sample to classify')
     args = parser.parse_args()
+
     for f in args.sample_files:
         print(f)
         if os.path.isfile(f):
