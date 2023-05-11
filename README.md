@@ -1,5 +1,7 @@
 # ai-detect: Fast methods to classify text as AI or human-generated
 
+[![Classifiation accuracy testing](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml/badge.svg)](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml)
+
 This is a research repo for fast AI detection methods as we experiment with different techniques.
 While there are a number of existing LLM detection systems, they all use a large model trained on either an LLM or
 its training data to calculate the probability of each word given the preceeding, then calculating a score where
