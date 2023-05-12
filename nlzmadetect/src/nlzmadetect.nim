@@ -5,10 +5,10 @@ import strutils
 when isMainModule:
   import std/[parseopt, os]
 
-const PRELUDE_FILE = "../ai-generated.txt"
+const PRELUDE_FILE = "../../ai-generated.txt"
 const COMPRESSION_PRESET = 2.int32
 const SHORT_SAMPLE_THRESHOLD = 350
-var PRELUDE_STR = readFile(PRELUDE_FILE).convert("us-ascii", "UTF-8").replace(re"[^\x00-\x7F]")
+const PRELUDE_STR = staticRead(PRELUDE_FILE)
 
 proc compress_str(s : string, preset = COMPRESSION_PRESET): float64
 
