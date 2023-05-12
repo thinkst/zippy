@@ -1,5 +1,92 @@
-WHO begins using the phrase “2019 Novel Coronavirus” or “2019-nCoV” to refer to disease causing the outbreak in Wuhan, China.
+In 2020 CDC worked around the clock – and around the globe – to protect Americans from health threats. While the COVID-19 pandemic has dominated the news, a number of other public health and scientific advancements are worth highlighting.
 
-CDC publishes information about the 2019 Novel Coronavirus (2019-nCoV) outbreak caused by the SARS CoV-2 virus on its website.
+“This has been a year of challenges, but also of innovation, modernization, and advancement in public health,” said Dr. Robert R. Redfield, CDC Director. “I am hopeful for the future and the months to come as CDC continues to secure the safety of the American people and this Nation.”
 
-Edward C. Holmes of the University of Sydney, Australia posts online that the viral genome sequence of the unknown pneumonia causing the outbreak in Wuhan has been uploaded to GenBank as “Wuhan-Hu-1” (MN908947) and will be released shortly. He does so on behalf of Yong-Zhen Zhang of Fudan University, Shanghai in collaboration with the Shanghai School of Public Health, the Central Hospital of Wuhan, Huazhong University of Science and Technology, the Wuhan Center for Disease Control and Prevention, the National Institute for Communicable Disease Control and Prevention, Chinese Center for Disease Control, and the University of Sydney. Hours later, Holmes and Zhang publish the sequence.
+Fighting the COVID-19 Pandemic
+
+As 2020 draws to a close, COVID-19 cases and deaths continue to rise across the United States. This is the worst pandemic to hit Americans in over 100 years. CDC urges everyone to help us stop the spread of this new and dangerous virus by staying home if you can, wearing a mask, staying 6 feet from others, avoiding crowds, avoiding poorly ventilated spaces, and washing your hands.
+
+The U.S. is entering a pivotal phase of the COVID-19 response. In collaboration with federal, state, local, and other sector partners, CDC made investments to ensure a strong infrastructure to help states be ready to administer vaccines. The federal government has been working since the start of the pandemic to make a COVID-19 vaccine available as soon as possible.
+
+CDC is at the forefront of the fight against COVID-19, playing a vital role in the U.S. response to the pandemic. The COVID-19 response is the largest and longest in CDC’s history.
+
+As CDC Director Robert R. Redfield stated, “This is the next step in our efforts to protect Americans, reduce the impact of the COVID-19 pandemic, and help restore some normalcy to our lives and our country.”
+
+Ending the HIV Epidemic
+
+There is an urgent need to get more people with HIV diagnosed early and into sustained HIV care and treatment. Each year, thousands of Americans still die from HIV and there are more than 36,000 new transmissions. The impact is greatest among certain groups.
+
+We now have the tools, the knowledge, and the opportunity to end America’s HIV epidemic.
+
+As part of the federal initiative Ending the HIV Epidemic: A Plan for America (EHE), CDC awarded $109 million to state and local health departments for implementation in 57 priority areas. A CDC study published in November 2020 highlighted that investments in HIV testing, care, and treatment have resulted in progress not only towards reducing the rate of HIV-related deaths, but decreasing the racial and ethnic disparities associated with HIV mortality. Through sustained and expanded efforts, the multi-year EHE initiative aims to reduce new HIV transmissions in the U.S. by at least 90% by the year 2030.
+
+Too often, detection of health threats means waiting until enough people come down with the same illnesses or injuries for public health authorities to notice. We’re working to fix that.
+
+Public health today is moving ever closer to real-time identification of outbreaks and other health threats before they become widespread. Doing this means collecting, processing, and acting upon many kinds of information from a wide variety of sources.
+
+New investments in fiscal year 2020 through Coronavirus Aid, Relief, and Economic Security (CARES) Act supplemental funding enabled CDC to begin strengthening the public health data and surveillance infrastructure of the United States through the launch of the agency-wide Public Health Data Modernization Initiative.
+
+This transformative, cross-cutting strategy will accelerate lifesaving prevention and response by:
+
+Bolstering our core “early warning” systems for real-time, linked data on emerging health threats
+Innovating toward pandemic-ready solutions for timely and complete data reporting to CDC
+Building a highly skilled public health workforce that applies state-of-the-art data skills and tools
+Integrating nationwide standards for efficient, secure data access and exchange
+
+Identifying the cause of a national lung injury outbreak: EVALI
+
+In August 2019, CDC, the U.S. Food and Drug Administration (FDA), the National Institutes of Health (NIH),  state and local health departments, and public health and clinical stakeholders began investigating a national outbreak of e-cigarette, or vaping, product use–associated lung injury (EVALI). More than 2,800 cases of EVALI were documented nationwide as of February 2020, and almost 70 people died from EVALI during this period.
+
+CDC had a key breakthrough in identifying the probable cause of EVALI in late 2019. Data pointed to the EVALI culprit: vitamin E acetate – and additive used in THC-containing e-cigarette, or vaping, products – was found in product emissions and in lung fluid samples of EVALI patients.
+
+In February 2020, CDC published its definitive study on the lung fluid findings, which confirmed the association between vitamin E acetate and EVALI, in the New England Journal of Medicine. 
+
+Since the identification of the primary cause of EVALI, coupled with efforts by CDC and other public health partners to educate the public about the risks of EVALI, cases have now dramatically declined since a peak in September 2019.
+
+Ending Ebola in the Democratic Republic of the Congo (DRC)
+
+Ebola, a deadly hemorrhagic fever that can spread rapidly if not quickly detected and responded to, is one of the most feared diseases in human history.
+
+CDC was on the front lines in DRC for the first confirmed Ebola outbreak in 1976. And CDC was there again for the three back-to-back outbreaks DRC experienced from 2018 to 2020.
+
+In 2020, CDC was part of the global public health response to two Ebola outbreaks in DRC. The first, which became the second largest Ebola outbreak in history, began in eastern DRC in August 2018 and was declared over on June 25, 2020. The second was announced on June 1, 2020 in Equateur Province and declared over on November 18, 2020. Among CDC significant contributions to ending the outbreaks in DRC, CDC worked with its international partners to vaccinate more than 320 thousand people in DRC and adjacent areas at risk for Ebola infection.
+
+One Death is Too Many: Fighting Maternal Mortality (Hear Her)
+
+Approximately 700 women die each year in the United States as a result of pregnancy-related complications. Two thirds of these deaths are preventable.
+
+To address maternal mortality, CDC this year launched Hear Her, a national campaign that brings attention to pregnancy-related deaths and provides education and encouragement to pregnant and postpartum people (within one year of delivery). Recognizing urgent maternal warning signs and getting an accurate and timely diagnosis can save lives. The Hear Her campaign is one of many efforts that CDC is working on to prevent maternal mortality.
+
+Find Hear Her campaign materials, including information for news media, here.
+
+Tracking and Stopping Foodborne Outbreaks
+
+Every week, CDC coordinates the investigation of between 17 and 36 possible multistate foodborne illness outbreaks. These are usually detected by PulseNet, CDC’s national laboratory network for detecting foodborne outbreaks.
+
+CDC disease detectives and laboratory scientists responded to several notable foodborne outbreaks in 2020:
+
+Bagged Salad Mix – From May through July 2020, an outbreak of cyclosporiasis sickened over 700 people in 14 states. CDC, working with state partners, traced the outbreak to bagged lettuce from a single producer.
+Onions – Salmonella From May through July, 1,127 people infected with the outbreak strain of Salmonella Newport were reported from 48 states. Interviews with sick people and traceback of onions showed that red onions from Thomson International Inc. were the likely source of this outbreak. This was the third largest foodborne outbreak of Salmonella since 1986.
+Peaches – Salmonella From late June to late August, 101 people infected with the outbreak strain of Salmonella Enteritidis were reported from 17 states.
+Nootkatone: CDC Invention Is Powerful Tool to Fight Vector-Borne Diseases
+
+What’s the most dangerous animal on earth? The mosquito. Mosquitoes, tick, and flea, bites spread  diseases that have plagued mankind for millennia – as well as dangerous infections, such as Zika, only recently identified.
+
+The best way to fight these vector-borne diseases is to prevent bites. Insect repellents and insecticides are essential tools in this effort. Soon there will be new products available to prevent bites on people and pets.
+
+CDC led the research and development of nootkatone, an active ingredient for use in insecticides and insect repellents. Insecticides made with nootkatone can help in the fight against mosquitoes that have become resistant to current ones.
+
+Nootkatone appears to kill biting pests in a unique way, different from other insecticides already registered by the Environmental Protection Agency (EPA). During the summer of 2020, nootkatone was registered by the EPA for manufacturing use into insecticides and repellents, paving the way for manufacturers to develop nootkatone-based products, including insect repellents, lotions, and soaps.
+
+2021: Looking Ahead
+
+July 2021 marks the 75th anniversary of the establishment of CDC—an important reminder of CDC’s rich history and leadership in solving the world’s most complex public health challenges.  Since the agency’s founding as the Communicable Disease Center on July 1, 1946, CDC’s primary mission has been improving public health in the United States and around the world by putting our science, data, and advanced technology into action.
+
+As 2021 approaches, CDC remains committed to its mission of working 24/7 to protect America from health, safety, and security threats, both foreign and domestic. CDC also continues to honor its pledge to the American people:
+
+Be a diligent steward of the funds entrusted to our agency
+Provide an environment for intellectual and personal growth and integrity
+Base all public health decisions on the highest quality scientific data that is derived openly and objectively
+Place the benefits to society above the benefits to our institution
+Treat all persons with dignity, honesty, and respect
+To learn more about the work of CDC visit the newsroom at www.cdc.gov/media.
