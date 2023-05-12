@@ -1,7 +1,5 @@
 # ai-detect: Fast methods to classify text as AI or human-generated
 
-[![Classifiation accuracy testing](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml/badge.svg)](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml)
-
 This is a research repo for fast AI detection methods as we experiment with different techniques.
 While there are a number of existing LLM detection systems, they all use a large model trained on either an LLM or
 its training data to calculate the probability of each word given the preceeding, then calculating a score where
@@ -9,6 +7,9 @@ the more high-probability tokens are more likely to be AI-originated. Techniques
 faster approximation to be embeddable and more scalable.
 
 ## LZMA compression detector (`lzma_detect.py` and `nlzmadetect`)
+
+[![Python classifiation accuracy testing](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml/badge.svg)](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml)
+[![Nim classification accuracy testing](https://github.com/Tail-Pipe/ai-detect/actions/workflows/nimtest.yml/badge.svg)](https://github.com/Tail-Pipe/ai-detect/actions/workflows/nimtest.yml)
 
 This is the first attempt, using the LZMA compression ratios as a way to indirectly measure the perplexity of a text.
 Compression ratios have been used in the past to [detect anomalies in network data](http://owncloud.unsri.ac.id/journal/security/ontheuse_compression_Network_anomaly_detec.pdf)
