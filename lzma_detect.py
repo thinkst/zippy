@@ -4,9 +4,10 @@
 # (C) 2023 Thinkst Applied Research, PTY
 # Author: Jacob Torrey <jacob@thinkst.com>
 
-import lzma, argparse, os
+import lzma, argparse, os, itertools
 import re
 from typing import List, Optional, Tuple
+from multiprocessing import Pool, cpu_count
 
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
@@ -15,13 +16,16 @@ with open(PRELUDE_FILE, 'r') as fp:
 
 class LzmaLlmDetector:
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
-    def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None) -> None:
+    def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
-        self.PRESET : int = 0
+        self.PRESET : int = 2
         self.comp = lzma.LZMACompressor(preset=self.PRESET)
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
-        self.prelude_ratio : float = 0.0
+        if prelude_ratio is None:
+            self.prelude_ratio : float = 0.0
+        else:
+            self.prelude_ratio : float = prelude_ratio
         self.FUZZINESS_THRESHOLD = fuzziness_digits
         self.SHORT_SAMPLE_THRESHOLD : int = 350 # What sample length is considered "short"
 
@@ -36,9 +40,10 @@ class LzmaLlmDetector:
                 self._compress_str(fp.read())
 
         if prelude_str != None:
-            self._compress_str(prelude_str)
-            self.prelude_ratio = self._finalize()
-            self.comp = lzma.LZMACompressor(preset=self.PRESET)
+            if self.prelude_ratio == 0.0:
+                self._compress_str(prelude_str)
+                self.prelude_ratio = self._finalize()
+                self.comp = lzma.LZMACompressor(preset=self.PRESET)
             self._compress_str(prelude_str)
     
     def _compress_str(self, s : str) -> None:
@@ -101,7 +106,11 @@ def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Tuple[str, floa
         #print('Calculating score for input of length ' + str(len(txt)))
         return l.score_text(txt)
 
-def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
+def _score_chunk(c : str, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Tuple[str, float]:
+        l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
+        return l.score_text(c)
+
+def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
     '''
     Given a filename (and an optional chunk size and number of decimal places to round to) returns the score for the contents of that file.
     This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -125,9 +134,13 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int
         start = end + 1
     chunks.append(contents[start:])
     scores = []
-    for c in chunks:
-        l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR)
-        scores.append(l.score_text(c))
+    if len(chunks) > 2:
+        with Pool(cpu_count()) as pool:
+            for r in pool.starmap(_score_chunk, zip(chunks, itertools.repeat(fuzziness), itertools.repeat(prelude_ratio))):
+                scores.append(r)
+    else:
+        for c in chunks:
+            scores.append(_score_chunk(c, fuzziness=fuzziness, prelude_ratio=prelude_ratio))
     ssum : float = 0.0
     for s in scores:
         if s[0] == 'AI':
