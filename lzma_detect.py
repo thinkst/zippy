@@ -22,10 +22,9 @@ class LzmaLlmDetector:
         self.comp = lzma.LZMACompressor(preset=self.PRESET)
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
-        if prelude_ratio is None:
-            self.prelude_ratio : float = 0.0
-        else:
-            self.prelude_ratio : float = prelude_ratio
+        self.prelude_ratio : float = 0.0
+        if prelude_ratio != None:
+            self.prelude_ratio = prelude_ratio
         self.FUZZINESS_THRESHOLD = fuzziness_digits
         self.SHORT_SAMPLE_THRESHOLD : int = 350 # What sample length is considered "short"
 
@@ -45,12 +44,12 @@ class LzmaLlmDetector:
                 self.prelude_ratio = self._finalize()
                 self.comp = lzma.LZMACompressor(preset=self.PRESET)
             self._compress_str(prelude_str)
-    
+            
     def _compress_str(self, s : str) -> None:
         '''
         Internal helper function to compress a string
         '''
-        strb : bytes = s.encode('utf-8')
+        strb : bytes = s.encode('ascii', errors='ignore')
         self.c_buf.append(self.comp.compress(strb))
         self.in_bytes += len(strb)
     
@@ -64,7 +63,10 @@ class LzmaLlmDetector:
         compressed_size : int = len(b''.join(self.c_buf))
         if self.in_bytes == 0:
             return 0.0
-        return compressed_size / self.in_bytes
+        score = compressed_size / self.in_bytes
+        self.in_bytes = 0
+        self.c_buf = []
+        return score
     
     def get_compression_ratio(self, s : str) -> Tuple[float, float]:
         '''
@@ -124,6 +126,7 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int
     contents = re.sub('\t', '', contents)
     contents = re.sub('\n+', '\n', contents)
     contents = re.sub('\n ', '\n', contents)
+    contents = re.sub(' \n', '\n', contents)
 
     start = 0
     end = 0
