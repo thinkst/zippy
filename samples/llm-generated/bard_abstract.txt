@@ -1,0 +1,9 @@
+Abstract
+
+Background: The development of new materials with improved properties is a key goal of materials science. One promising approach to achieving this goal is the use of self-assembly, a process in which molecules or atoms spontaneously organize themselves into ordered structures.
+
+Methods: In this study, we used self-assembly to create a new type of material with improved thermal conductivity. The material is composed of gold nanoparticles that are arranged in a hexagonal lattice.
+
+Results: The thermal conductivity of the material was measured to be significantly higher than that of other materials with similar structures. The high thermal conductivity is attributed to the efficient heat transfer between the gold nanoparticles.
+
+Conclusions: The results of this study demonstrate the potential of self-assembly to create new materials with improved properties. The development of new materials with high thermal conductivity is of interest for a variety of applications, including thermal management and energy harvesting.
