@@ -1,4 +1,4 @@
-import std/[re, math]
+import std/[re, math, threadpool]
 import lzma
 import encodings
 import strutils
@@ -36,6 +36,12 @@ proc score_string*(s : string, fuzziness : int): (string, float64) =
 
   return (determination, abs(delta) * 100.0)
 
+proc score_chunk(chunk : string, fuzziness : int): float64 =
+  var (d, s) = score_string(chunk, fuzziness)
+  if d == "AI":
+    return -1.0 * s
+  return s
+
 proc run_on_file_chunked*(filename : string, chunk_size : int = 1024, fuzziness : int = 3): (string, float64) =
   var inf = readFile(filename)
 
@@ -56,8 +62,18 @@ proc run_on_file_chunked*(filename : string, chunk_size : int = 1024, fuzziness 
   chunks.add(inf[start..inf.len-1])
 
   var scores : seq[(string, float64)] = @[]
+  var flows : seq[FlowVar[float64]] = @[]
   for c in chunks:
-    scores.add(score_string(c, fuzziness))
+    flows.add(spawn score_chunk(c, fuzziness))
+
+  for f in flows:
+    let score = ^f
+    var d : string = "Human"
+    if score < 0.0:
+      d = "AI"
+      scores.add((d, score * -1.0))
+    else:
+      scores.add((d, score))
   var ssum : float64 = 0.0
   for s in scores:
     if s[0] == "AI":
