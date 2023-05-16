@@ -12,7 +12,7 @@ suite "Test the LZMA detector against LLM-generated files":
 
     test "Classify LLM-generated samples":
         for f in files:
-            let (d, s) = run_on_file_chunked(f)
+            let (d, s) = run_on_text_chunked(readFile f)
             if d == "AI":
                 passed += 1
             else:

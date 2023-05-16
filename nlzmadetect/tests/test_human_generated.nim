@@ -12,7 +12,7 @@ suite "Test the LZMA detector against human-generated files":
 
     test "Classify human-generated samples":
         for f in files:
-            let (d, s) = run_on_file_chunked(f)
+            let (d, s) = run_on_text_chunked(readFile f)
             if d == "Human":
                 passed += 1
             else:
