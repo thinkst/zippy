@@ -9,7 +9,7 @@ import strutils
 when isMainModule and defined(c):
   import std/[parseopt, os]
 
-const COMPRESSION_PRESET = 2.int32
+const COMPRESSION_PRESET = 1.int32
 const SHORT_SAMPLE_THRESHOLD = 350
 
 
@@ -148,8 +148,14 @@ when defined(c) and isMainModule:
       echo "(" & d & ", " & $s.formatFloat(ffDecimal, 8) & ")"
 
 when defined(js) and isMainModule:
+  document.getElementById("preset_value").value = ($COMPRESSION_PRESET).cstring
+
   proc do_detect() {.exportc.} =
     let
       text : string = $document.getElementById("text_input").value
     var (d, s) = run_on_text_chunked(text)
+    var color = "rgba(255, 0, 0, " & $(s.round(3) * 10.0) & ")"
+    if d == "Human":
+      color = "rgba(0, 255, 0, " & $(s.round(3) * 10.0) & ")"
     document.getElementById("output_span").textContent = d.cstring & ", confidence score of: " & ($s.round(6)).cstring
+    document.getElementById("output_span").style.backgroundColor = color.cstring
