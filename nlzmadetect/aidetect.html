@@ -8,7 +8,8 @@
             <h1>LZMA-based LLM text classifier</h1>
             <textarea id="text_input" placeholder="Put text to classify in here..." style="width: 75%; height: 25%;"></textarea><br /><br />
             <input type="text" id="preset_value" size="1" disabled hidden/><button onclick="time_do_detect();" id="processbtn">Click here to classify!</button><br /><br />
-            <span id="output_span">The results will appear here!</span>
+            <span id="output_span">The results will appear here!</span><br /><br />
+            <button onclick="add_to_lp()" id="addlp" hidden>That should have been classified as AI! Be better!</button>
         </div>
         <script type="application/javascript">
             async function time_do_detect() {
@@ -21,6 +22,7 @@
                 const end = Date.now();
                 document.getElementById("processbtn").disabled = false;
                 document.getElementById("processbtn").innerText = "Click here to classify!";
+                document.getElementById("addlp").hidden = false;
                 console.log("Processing " + ilen + " bytes took " + (end - start) + " ms");
             }
         </script>
