@@ -1,0 +1,3 @@
+[submodule "nlzmadetect/LZMA-JS"]
+	path = nlzmadetect/LZMA-JS
+	url = git@github.com:LZMA-JS/LZMA-JS.git

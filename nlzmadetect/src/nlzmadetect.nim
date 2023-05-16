@@ -1,24 +1,45 @@
-import std/[re, math, threadpool]
-import lzma
-import encodings
+when defined(c):
+  import std/[re, threadpool, encodings]
+  import lzma
+when defined(js):
+  import std/[jsffi, jsre]
+  import dom
+import std/math
 import strutils
-when isMainModule:
+when isMainModule and defined(c):
   import std/[parseopt, os]
 
-const PRELUDE_FILE = "../../ai-generated.txt"
 const COMPRESSION_PRESET = 2.int32
 const SHORT_SAMPLE_THRESHOLD = 350
+
+
+const PRELUDE_FILE = "../../ai-generated.txt"
 const PRELUDE_STR = staticRead(PRELUDE_FILE)
-
 proc compress_str(s : string, preset = COMPRESSION_PRESET): float64
-
 var PRELUDE_RATIO = compress_str("")
+
+when defined(js):
+  var console {.importc, nodecl.}: JsObject
+  proc compress(str : cstring, mode : int) : seq[byte] {.importjs: "LZMA.compress(#, #)".}
+  console.log("Initialized with a prelude compression ratio of: " & $PRELUDE_RATIO)
+
+# Target independent wrapper for LZMA compression
+proc ti_compress(input : cstring, preset: int32, check: int32): seq[byte] = 
+  when defined(c):
+    return compress(input, preset, check)
+  when defined(js):
+    return compress(input, preset)
 
 proc compress_str(s : string, preset = COMPRESSION_PRESET): float64 =
   let
     in_len = PRELUDE_STR.len + s.len
+  var combined : string = PRELUDE_STR & s
+  when defined(c):
     combined = convert(PRELUDE_STR & s, "us-ascii", "UTF-8").replace(re"[^\x00-\x7F]")
-    out_len = compress(combined.cstring, preset, 0.int32).len
+  when defined(js):
+    let nonascii = newRegExp(r"[^\x00-\x7F]")
+    combined = $combined.cstring.replace(nonascii, "")
+  let out_len = ti_compress(combined.cstring, preset, 0.int32).len
   return out_len.toFloat / in_len.toFloat
 
 proc score_string*(s : string, fuzziness : int): (string, float64) =
@@ -36,20 +57,27 @@ proc score_string*(s : string, fuzziness : int): (string, float64) =
 
   return (determination, abs(delta) * 100.0)
 
-proc score_chunk(chunk : string, fuzziness : int): float64 =
-  var (d, s) = score_string(chunk, fuzziness)
-  if d == "AI":
-    return -1.0 * s
-  return s
+when defined(c):
+  proc score_chunk(chunk : string, fuzziness : int): float64 =
+    var (d, s) = score_string(chunk, fuzziness)
+    if d == "AI":
+      return -1.0 * s
+    return s
 
-proc run_on_file_chunked*(filename : string, chunk_size : int = 1024, fuzziness : int = 3): (string, float64) =
-  var inf = readFile(filename)
-
-  inf = replace(inf, re" +", " ")
-  inf = replace(inf, re"\t")
-  inf = replace(inf, re"\n+", "\n")
-  inf = replace(inf, re"\n ", "\n")
-  inf = replace(inf, re" \n", "\n")
+proc run_on_text_chunked*(text : string, chunk_size : int = 1024, fuzziness : int = 3): (string, float64) =
+  var inf : string = text
+  when defined(c):
+    inf = replace(inf, re" +", " ")
+    inf = replace(inf, re"\t")
+    inf = replace(inf, re"\n+", "\n")
+    inf = replace(inf, re"\n ", "\n")
+    inf = replace(inf, re" \n", "\n")
+  when defined(js):
+    inf = $inf.cstring.replace(newRegExp(r" +"), " ")
+    inf = $inf.cstring.replace(newRegExp(r"\t"), "")
+    inf = $inf.cstring.replace(newRegExp(r"\n+"), "\n")
+    inf = $inf.cstring.replace(newRegExp(r"\n "), "\n")
+    inf = $inf.cstring.replace(newRegExp(r" \n"), "\n")
 
   var
     start = 0
@@ -62,18 +90,24 @@ proc run_on_file_chunked*(filename : string, chunk_size : int = 1024, fuzziness 
   chunks.add(inf[start..inf.len-1])
 
   var scores : seq[(string, float64)] = @[]
-  var flows : seq[FlowVar[float64]] = @[]
-  for c in chunks:
-    flows.add(spawn score_chunk(c, fuzziness))
 
-  for f in flows:
-    let score = ^f
-    var d : string = "Human"
-    if score < 0.0:
-      d = "AI"
-      scores.add((d, score * -1.0))
-    else:
-      scores.add((d, score))
+  when defined(c):
+    var flows : seq[FlowVar[float64]] = @[]
+    for c in chunks:
+      flows.add(spawn score_chunk(c, fuzziness))
+
+    for f in flows:
+      let score = ^f
+      var d : string = "Human"
+      if score < 0.0:
+        d = "AI"
+        scores.add((d, score * -1.0))
+      else:
+        scores.add((d, score))
+  when defined(js):
+    for c in chunks:
+      scores.add(score_string(c, fuzziness))
+
   var ssum : float64 = 0.0
   for s in scores:
     if s[0] == "AI":
@@ -86,11 +120,11 @@ proc run_on_file_chunked*(filename : string, chunk_size : int = 1024, fuzziness 
   else:
       return ("Human", abs(sa))
 
-when isMainModule:
+when isMainModule and defined(c):
   proc display_help() =
     echo "Call with one or more files to classify"
 
-when isMainModule:
+when defined(c) and isMainModule:
   var 
     filenames : seq[string] = @[]
     parser = initOptParser()
@@ -110,5 +144,12 @@ when isMainModule:
   for fn in filenames:
     if fileExists(fn):
       echo fn
-      let (d, s) = run_on_file_chunked(fn)
+      let (d, s) = run_on_text_chunked(readFile(fn))
       echo "(" & d & ", " & $s.formatFloat(ffDecimal, 8) & ")"
+
+when defined(js) and isMainModule:
+  proc do_detect() {.exportc.} =
+    let
+      text : string = $document.getElementById("text_input").value
+    var (d, s) = run_on_text_chunked(text)
+    document.getElementById("output_span").textContent = d.cstring & ", confidence score of: " & ($s.round(6)).cstring

@@ -1,0 +1,13 @@
+<html>
+    <head>
+        <title>LLM text detector</title>
+        <script src="./LZMA-JS/src/lzma_worker.js" type="application/javascript"></script>
+    </head>
+    <body onload="">
+        <h1>LZMA-based LLM text classifier</h1>
+        <textarea id="text_input">Put text to classify in here...</textarea><br />
+        <button onclick="do_detect();">Click here to classify!</button><br />
+        <span id="output_span">The results will appear here!</span>
+        <script src="./src/nlzmadetect.js" type="application/javascript"></script>
+    </body>
+</html>

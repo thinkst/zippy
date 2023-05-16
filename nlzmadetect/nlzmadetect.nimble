@@ -20,3 +20,6 @@ task debug, "Build a debug version of the CLI application":
 
 task release, "Build a release version of the CLI application":
     exec "nimble build -d:release --threads:on"
+
+task buildjs, "Build a Javascript version of the application":
+    exec "nim js -d:release src/nlzmadetect.nim"
