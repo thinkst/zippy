@@ -14,6 +14,12 @@ PRELUDE_FILE : str = 'ai-generated.txt'
 with open(PRELUDE_FILE, 'r') as fp:
     PRELUDE_STR = fp.read()
 
+PRELUDE_STR = re.sub(' +', ' ', PRELUDE_STR)
+PRELUDE_STR = re.sub('\t', '', PRELUDE_STR)
+PRELUDE_STR = re.sub('\n+', '\n', PRELUDE_STR)
+PRELUDE_STR = re.sub('\n ', '\n', PRELUDE_STR)
+PRELUDE_STR = re.sub(' \n', '\n', PRELUDE_STR)
+
 class LzmaLlmDetector:
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
     def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
@@ -112,7 +118,7 @@ def _score_chunk(c : str, fuzziness : int = 3, prelude_ratio : Optional[float] =
         l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
         return l.score_text(c)
 
-def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
+def run_on_file_chunked(filename : str, chunk_size : int = 1025, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
     '''
     Given a filename (and an optional chunk size and number of decimal places to round to) returns the score for the contents of that file.
     This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -120,6 +126,15 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int
     '''
     with open(filename, 'r') as fp:
         contents = fp.read()
+    return run_on_text_chunked(contents, chunk_size, fuzziness, prelude_ratio)
+
+def run_on_text_chunked(s : str, chunk_size : int = 1025, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
+    '''
+    Given a string (and an optional chunk size and number of decimal places to round to) returns the score for the passed string.
+    This function chunks the input into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
+    being skewed because its compression ratio starts to overwhelm the prelude file.
+    '''
+    contents = s
     
     # Remove extra spaces and duplicate newlines.
     contents = re.sub(' +', ' ', contents)
