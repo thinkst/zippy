@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 
 from roberta_local import classify_text
 
-def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
+def run_on_file_chunked(filename : str, chunk_size : int = 1025, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
 	'''
 	Given a filename (and an optional chunk size) returns the score for the contents of that file.
 	This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -15,6 +15,14 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1024, fuzziness : int
 	'''
 	with open(filename, 'r') as fp:
 		contents = fp.read()
+	return run_on_text_chunked(contents, chunk_size, fuzziness)
+
+def run_on_text_chunked(contents : str, chunk_size : int = 1025, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
+	'''
+	Given a text (and an optional chunk size) returns the score for the contents of that string.
+	This function chunks the string into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
+	overwhelming the model.
+	'''
 
 	# Remove extra spaces and duplicate newlines.
 	contents = re.sub(' +', ' ', contents)
