@@ -37,4 +37,4 @@ jobs:
     - name: Test with pytest
       #continue-on-error: true
       run: |
-        pytest --junitxml=junit.xml test_lzma_detect.py || genbadge tests -i junit.xml -t 75 -o badge.svg
+        pytest --junitxml=junit.xml --tb=no test_lzma_detect.py || genbadge tests -i junit.xml -t 75 -o badge.svg
