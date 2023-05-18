@@ -9,22 +9,32 @@ import re
 from typing import List, Optional, Tuple
 from multiprocessing import Pool, cpu_count
 
+def clean_text(s : str) -> str:
+    '''
+    Removes formatting and other non-content data that may skew compression ratios (e.g., duplicate spaces)
+    '''
+    # Remove extra spaces and duplicate newlines.
+    s = re.sub(' +', ' ', s)
+    s = re.sub('\t', '', s)
+    s = re.sub('\n+', '\n', s)
+    s = re.sub('\n ', '\n', s)
+    s = re.sub(' \n', '\n', s)
+
+    # Remove non-alphanumeric chars
+    s = re.sub('[^0-9A-Za-z \n]', '', s)
+
+    return s
+
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
 with open(PRELUDE_FILE, 'r') as fp:
-    PRELUDE_STR = fp.read()
-
-PRELUDE_STR = re.sub(' +', ' ', PRELUDE_STR)
-PRELUDE_STR = re.sub('\t', '', PRELUDE_STR)
-PRELUDE_STR = re.sub('\n+', '\n', PRELUDE_STR)
-PRELUDE_STR = re.sub('\n ', '\n', PRELUDE_STR)
-PRELUDE_STR = re.sub(' \n', '\n', PRELUDE_STR)
+    PRELUDE_STR = clean_text(fp.read())
 
 class LzmaLlmDetector:
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
     def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
-        self.PRESET : int = 2
+        self.PRESET : int = 3
         self.comp = lzma.LZMACompressor(preset=self.PRESET)
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
@@ -134,14 +144,7 @@ def run_on_text_chunked(s : str, chunk_size : int = 1025, fuzziness : int = 3, p
     This function chunks the input into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
     being skewed because its compression ratio starts to overwhelm the prelude file.
     '''
-    contents = s
-    
-    # Remove extra spaces and duplicate newlines.
-    contents = re.sub(' +', ' ', contents)
-    contents = re.sub('\t', '', contents)
-    contents = re.sub('\n+', '\n', contents)
-    contents = re.sub('\n ', '\n', contents)
-    contents = re.sub(' \n', '\n', contents)
+    contents = clean_text(s)
 
     start = 0
     end = 0
