@@ -7,8 +7,8 @@ from lzma_detect import run_on_file_chunked, run_on_text_chunked, PRELUDE_STR, L
 AI_SAMPLE_DIR = 'samples/llm-generated/'
 HUMAN_SAMPLE_DIR = 'samples/human-generated/'
 
-MIN_LEN = 150
-NUM_JSONL_SAMPLES = 50
+MIN_LEN = 1000
+NUM_JSONL_SAMPLES = 250
 
 ai_files = os.listdir(AI_SAMPLE_DIR)
 human_files = os.listdir(HUMAN_SAMPLE_DIR)
@@ -46,7 +46,6 @@ def test_llm_sample(f, record_property):
            warn("Misclassified " + f + " with score of: " + str(round(score, 8)))
        else:
            warn("Unable to confidently classify: " + f)
-
 
 HUMAN_JSONL_FILE = 'samples/webtext.test.jsonl'
 human_samples = []
