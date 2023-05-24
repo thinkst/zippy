@@ -21,7 +21,7 @@ def clean_text(s : str) -> str:
     s = re.sub(' \n', '\n', s)
 
     # Remove non-alphanumeric chars
-    s = re.sub('[^0-9A-Za-z,\.\(\) \n]', '', s).lower()
+    s = re.sub('[^0-9A-Za-z,\.\(\) \n]', '', s)#.lower()
 
     return s
 
