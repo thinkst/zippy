@@ -9,7 +9,7 @@ from itertools import chain
 from math import sqrt
 from junitparser import JUnitXml
 
-MODELS = ['lzma', 'roberta']
+MODELS = ['lzma', 'roberta', 'gptzero']
 
 plt.figure()
 
