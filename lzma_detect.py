@@ -21,7 +21,7 @@ def clean_text(s : str) -> str:
     s = re.sub(' \n', '\n', s)
 
     # Remove non-alphanumeric chars
-    s = re.sub('[^0-9A-Za-z \n]', '', s)
+    s = re.sub('[^0-9A-Za-z,\.\(\) \n]', '', s).lower()
 
     return s
 
@@ -163,12 +163,12 @@ def run_on_text_chunked(s : str, chunk_size : int = 1025, fuzziness : int = 3, p
         for c in chunks:
             scores.append(_score_chunk(c, fuzziness=fuzziness, prelude_ratio=prelude_ratio))
     ssum : float = 0.0
-    for s in scores:
+    for i, s in enumerate(scores):
         if s[0] == 'AI':
-            ssum -= s[1]
+            ssum -= s[1] * (len(chunks[i]) / len(contents))
         else:
-            ssum += s[1]
-    sa : float = ssum / len(scores)
+            ssum += s[1] * (len(chunks[i]) / len(contents))
+    sa : float = ssum# / len(scores)
     if sa < 0:
         return ('AI', abs(sa))
     else:
