@@ -9,7 +9,7 @@ from itertools import chain
 from math import sqrt
 from junitparser import JUnitXml
 
-MODELS = ['lzma', 'roberta', 'gptzero']
+MODELS = ['lzma', 'roberta', 'gptzero', 'openai']
 
 plt.figure()
 
@@ -53,8 +53,9 @@ for model in MODELS:
 
     # Plot the ROC curve
     plt.plot(fpr, tpr, lw=2, label=model.capitalize() + ': ROC curve (AUC = %0.2f)' % roc_auc)
-    plt.scatter(fpr[ix], tpr[ix], marker='o', color='black', label='Best @ threshold = %0.2f' % thresholds[ix])
-    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label="Random classifier")
+    plt.scatter(fpr[ix], tpr[ix], marker='o', color='black')#, label=model.capitalize() + ': Best @ threshold = %0.2f' % thresholds[ix])
+
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label="Random classifier")
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
