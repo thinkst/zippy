@@ -27,4 +27,4 @@ The leading LLM detection tools are [OpenAI's model detector (v2)](https://opena
 
 ![ROC curve of detection tools](https://github.com/Tail-Pipe/ai-detect/blob/main/ai_detect_roc.png?raw=true)
 
-***It should bee noted that the evaluation is skewed by selecting only a subset of each dataset, as the DNN detectors perform better on more diverse inputs (e.g., code, foreign languages, etc.) whereas the LZMA-based detector works on inputs closer in style to the prelude data (i.e., English prose).**
+***It should be noted that the evaluation is skewed by selecting only a subset of each dataset, as the DNN detectors perform better on more diverse inputs (e.g., code, foreign languages, etc.) whereas the LZMA-based detector works on inputs closer in style to the prelude data (i.e., English prose).**
