@@ -34,7 +34,7 @@ class LzmaLlmDetector:
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
     def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
-        self.PRESET : int = 3
+        self.PRESET : int = 2
         self.comp = lzma.LZMACompressor(preset=self.PRESET)
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
@@ -114,7 +114,7 @@ class LzmaLlmDetector:
             determination = 'Human'
         #if abs(delta * 100) < .1 and determination == 'AI':
         #    print("Very low-confidence determination of: " + determination)
-        return (determination, abs(delta * 100))
+        return (determination, abs(delta * 1000))
         
 def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
     '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
