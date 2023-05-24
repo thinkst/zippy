@@ -20,3 +20,11 @@ is to 'seed' an LZMA compression stream with a corpus of AI-generated text (`ai-
 just the seed data with that of the sample appended. Samples that follow more closely in word choice, structure, etc. will acheive a higher 
 compression ratio due to the prevalence of similar tokens in the dictionary, novel words, structures, etc. will appear anomalous to the seeded
 dictionary, resulting in a worse compression ratio.
+
+### Current evaluation
+
+The leading LLM detection tools are [OpenAI's model detector (v2)](https://openai.com/blog/new-ai-classifier-for-indicating-ai-written-text), [GPTZero](https://gptzero.me/), and [Roberta](https://huggingface.co/roberta-base-openai-detector). Here are each of them compared with the LZMA detector across all the test datasets:
+
+![ROC curve of detection tools](https://github.com/Tail-Pipe/ai-detect/blob/main/ai_detect_roc.png?raw=true)
+
+***It should bee noted that the evaluation is skewed by selecting only a subset of each dataset, as the DNN detectors perform better on more diverse inputs (e.g., code, foreign languages, etc.) whereas the LZMA-based detector works on inputs closer in style to the prelude data (i.e., English prose).**
