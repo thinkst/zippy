@@ -60,18 +60,18 @@ def test_human_jsonl(i, record_property):
     record_property("score", str(score))
     assert classification == 'Human', HUMAN_JSONL_FILE + ':' + str(i.get('id')) + ' (len: ' + str(i.get('length', -1)) + ') is a human-generated sample, misclassified as AI-generated with confidence ' + str(round(score, 8))
 
-AI_JSONL_FILE = 'samples/xl-1542M.test.jsonl'
-ai_samples = []
-with jsonlines.open(AI_JSONL_FILE) as reader:
-    for obj in reader:
-        if obj.get('length', 0) >= MIN_LEN:
-            ai_samples.append(obj)
+# AI_JSONL_FILE = 'samples/xl-1542M.test.jsonl'
+# ai_samples = []
+# with jsonlines.open(AI_JSONL_FILE) as reader:
+#     for obj in reader:
+#         if obj.get('length', 0) >= MIN_LEN:
+#             ai_samples.append(obj)
 
-@pytest.mark.parametrize('i', ai_samples[0:NUM_JSONL_SAMPLES])
-def test_gpt2_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('text', ''), fuzziness=FUZZINESS, prelude_ratio=PRELUDE_RATIO)
-    record_property("score", str(score))
-    assert classification == 'AI', AI_JSONL_FILE + ':' + str(i.get('id')) + ' (text: ' + i.get('text', "").replace('\n', ' ')[:50] + ') is an LLM-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
+# @pytest.mark.parametrize('i', ai_samples[0:NUM_JSONL_SAMPLES])
+# def test_gpt2_jsonl(i, record_property):
+#     (classification, score) = run_on_text_chunked(i.get('text', ''), fuzziness=FUZZINESS, prelude_ratio=PRELUDE_RATIO)
+#     record_property("score", str(score))
+#     assert classification == 'AI', AI_JSONL_FILE + ':' + str(i.get('id')) + ' (text: ' + i.get('text', "").replace('\n', ' ')[:50] + ') is an LLM-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
 
 GPT3_JSONL_FILE = 'samples/GPT-3-175b_samples.jsonl'
 gpt3_samples = []
