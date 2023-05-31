@@ -3,13 +3,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
-from lzma_detect import run_on_file_chunked, PRELUDE_STR, LzmaLlmDetector
-from pathlib import Path
-from itertools import chain
-from math import sqrt
+import re
 from junitparser import JUnitXml
 
 MODELS = ['lzma', 'roberta', 'gptzero', 'openai']
+SKIPCASES = ['gpt2', 'gpt3']
+
+MAX_PER_CASE = 500
 
 plt.figure()
 
@@ -22,30 +22,51 @@ for model in MODELS:
     
     truths = []
     scores = []
+    per_case = {}
+    fails_per_case = {}
     for c in cases:
-        score = float(c._elem.getchildren()[0].getchildren()[0].values()[1])
+        if c.name is None:
+            print("ERROR")
+            continue
+        cname = re.sub('\[.*$', '', c.name)
+        if any(sub in cname for sub in SKIPCASES):
+            continue
+        if cname in per_case.keys():
+            per_case[cname] += 1
+        else:
+            per_case[cname] = 1
+            fails_per_case[cname] = 0
+        if per_case[cname] > MAX_PER_CASE:
+            continue
+        try:
+            score = float(c._elem.getchildren()[0].getchildren()[0].values()[1])
+        except:
+            continue
         if 'human' in c.name:
             truths.append(1)
             if c.is_passed:
                 scores.append(score)
             else:
+                fails_per_case[cname] += 1
                 scores.append(score * -1.0)
         else:
             truths.append(-1)
             if c.is_passed:
                 scores.append(score * -1.0)
             else:
+                fails_per_case[cname] += 1
                 scores.append(score)
 
     y_true = np.array(truths)
     y_scores = np.array(scores) 
-
+    print("Failures per case for " + model)
+    print(fails_per_case)
     # Compute the false positive rate (FPR), true positive rate (TPR), and threshold values
     fpr, tpr, thresholds = roc_curve(y_true, y_scores)
     gmeans = np.sqrt(tpr * (1-fpr))
     ix = np.argmax(gmeans)
     print('Best Threshold=%f, G-Mean=%.3f' % (thresholds[ix], gmeans[ix]))
-    print(thresholds)
+    #print(thresholds)
     # calculate the g-mean for each threshold
     # locate the index of the largest g-mean
     # Calculate the area under the ROC curve (AUC)
