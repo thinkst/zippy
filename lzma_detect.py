@@ -25,6 +25,13 @@ def clean_text(s : str) -> str:
 
     return s
 
+def to_english(s : str) -> str:
+    '''
+    Remove non-English (or names) from an input
+    '''
+
+    return s
+
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
 with open(PRELUDE_FILE, 'r') as fp:
@@ -34,7 +41,7 @@ class LzmaLlmDetector:
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
     def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
-        self.PRESET : int = 2
+        self.PRESET : int = 1
         self.comp = lzma.LZMACompressor(preset=self.PRESET)
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
@@ -106,15 +113,15 @@ class LzmaLlmDetector:
             determination = 'Human'
 
         # If the sample doesn't 'move the needle', it's very close
-        if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) >= self.SHORT_SAMPLE_THRESHOLD:
-            #print('Sample len to default to AI: ' + str(len(sample)))
-            determination = 'AI'
-        if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) < self.SHORT_SAMPLE_THRESHOLD:
-            #print('Sample len to default to Human: ' + str(len(sample)))
-            determination = 'Human'
+        # if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) >= self.SHORT_SAMPLE_THRESHOLD:
+        #     #print('Sample len to default to AI: ' + str(len(sample)))
+        #     determination = 'AI'
+        # if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) < self.SHORT_SAMPLE_THRESHOLD:
+        #     #print('Sample len to default to Human: ' + str(len(sample)))
+        #     determination = 'Human'
         #if abs(delta * 100) < .1 and determination == 'AI':
         #    print("Very low-confidence determination of: " + determination)
-        return (determination, abs(delta * 1000))
+        return (determination, abs(delta * 100))
         
 def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
     '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
@@ -128,7 +135,7 @@ def _score_chunk(c : str, fuzziness : int = 3, prelude_ratio : Optional[float] =
         l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
         return l.score_text(c)
 
-def run_on_file_chunked(filename : str, chunk_size : int = 1025, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
+def run_on_file_chunked(filename : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
     '''
     Given a filename (and an optional chunk size and number of decimal places to round to) returns the score for the contents of that file.
     This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -138,7 +145,7 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1025, fuzziness : int
         contents = fp.read()
     return run_on_text_chunked(contents, chunk_size, fuzziness, prelude_ratio)
 
-def run_on_text_chunked(s : str, chunk_size : int = 1025, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
+def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
     '''
     Given a string (and an optional chunk size and number of decimal places to round to) returns the score for the passed string.
     This function chunks the input into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
