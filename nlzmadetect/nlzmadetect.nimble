@@ -23,3 +23,6 @@ task release, "Build a release version of the CLI application":
 
 task buildjs, "Build a Javascript version of the application":
     exec "nim js -d:release src/nlzmadetect.nim"
+
+task buildext, "Build a Javascript version for use in a browser extension":
+    exec "nim js -d:release -d:extension src/nlzmadetect.nim"

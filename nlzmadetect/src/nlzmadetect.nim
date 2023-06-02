@@ -9,10 +9,12 @@ import strutils
 when isMainModule and defined(c):
   import std/[parseopt, os]
 
-when defined(js):
+when defined(js) and not defined(extension):
   var local_prelude : string = ""
+when defined(extension):
+  var local_prelude {.exportc.} : cstring = ""
 
-const COMPRESSION_PRESET = 1.int32
+var COMPRESSION_PRESET {.exportc.} = 2.int32
 const SHORT_SAMPLE_THRESHOLD = 350
 
 const PRELUDE_FILE = "../../ai-generated.txt"
@@ -22,9 +24,9 @@ var PRELUDE_RATIO = compress_str("")
 
 when defined(js):
   var console {.importc, nodecl.}: JsObject
-  proc getLocalStorageItem(key : cstring) : JsObject {.importjs: "localStorage.getItem(#)".}
-  proc setLocalStorageItem(key : cstring, val : cstring) {.importjs: "localStorage.setItem(#, #)".}
-
+  when not defined(extension):
+    proc getLocalStorageItem(key : cstring) : JsObject {.importjs: "localStorage.getItem(#)".}
+    proc setLocalStorageItem(key : cstring, val : cstring) {.importjs: "localStorage.setItem(#, #)".}
   proc compress(str : cstring, mode : int) : seq[byte] {.importjs: "LZMA.compress(#, #)".}
   console.log("Initialized with a prelude compression ratio of: " & $PRELUDE_RATIO)
 
@@ -42,7 +44,10 @@ proc compress_str(s : string, preset = COMPRESSION_PRESET): float64 =
     combined = convert(PRELUDE_STR & s, "us-ascii", "UTF-8").replace(re"[^\x00-\x7F]")
   when defined(js):
     let in_len = PRELUDE_STR.len + local_prelude.len + s.len
-    var combined : string = PRELUDE_STR & local_prelude & s
+    when defined(extension):
+      var combined : string = PRELUDE_STR & $(local_prelude) & s
+    when not defined(extension):
+      var combined : string = PRELUDE_STR & local_prelude & s
     let nonascii = newRegExp(r"[^\x00-\x7F]")
     combined = $combined.cstring.replace(nonascii, "")
   let out_len = ti_compress(combined.cstring, preset, 0.int32).len
@@ -154,31 +159,49 @@ when defined(c) and isMainModule:
       echo "(" & d & ", " & $s.formatFloat(ffDecimal, 8) & ")"
 
 when defined(js) and isMainModule:
-  document.getElementById("preset_value").value = ($COMPRESSION_PRESET).cstring
-  if getLocalStorageItem("local_prelude") != jsNull:
-    local_prelude = $(getLocalStorageItem("local_prelude").to(cstring))
-    PRELUDE_RATIO = compress_str("")
-    console.log("New prelude compression ratio of: " & $PRELUDE_RATIO)
-
-  proc add_to_lp() {.exportc.} =
-    let new_text = document.getElementById("text_input").value
-    local_prelude = local_prelude & "\n" & ($new_text)
+  when not defined(extension):
+    if not document.getElementById("preset_value").isNil:
+      document.getElementById("preset_value").value = ($COMPRESSION_PRESET).cstring
     if getLocalStorageItem("local_prelude") != jsNull:
-      let existing = getLocalStorageItem("local_prelude").to(cstring)
-      setLocalStorageItem("local_prelude", existing & "\n" & new_text)
-    else:
-      setLocalStorageItem("local_prelude", new_text)
-    PRELUDE_RATIO = compress_str("")
-    console.log("New prelude compression ratio of: " & $PRELUDE_RATIO)
+      local_prelude = $(getLocalStorageItem("local_prelude").to(cstring))
+      PRELUDE_RATIO = compress_str("")
+      console.log("New prelude compression ratio of: " & $PRELUDE_RATIO)
 
-  proc do_detect() {.exportc.} =
-    let
-      text : string = $document.getElementById("text_input").value
-    var (d, s) = run_on_text_chunked(text)
-    var color = "rgba(255, 0, 0, " & $(s.round(3) * 10.0) & ")"
-    if d == "Human":
-      color = "rgba(0, 255, 0, " & $(s.round(3) * 10.0) & ")"
-    document.getElementById("output_span").textContent = d.cstring & ", confidence score of: " & ($s.round(6)).cstring
-    document.getElementById("output_span").style.backgroundColor = color.cstring
+    proc add_to_lp() {.exportc.} =
+      let new_text = document.getElementById("text_input").value
+      local_prelude = local_prelude & "\n" & ($new_text)
+      if getLocalStorageItem("local_prelude") != jsNull:
+        let existing = getLocalStorageItem("local_prelude").to(cstring)
+        setLocalStorageItem("local_prelude", existing & "\n" & new_text)
+      else:
+        setLocalStorageItem("local_prelude", new_text)
+      PRELUDE_RATIO = compress_str("")
+      console.log("New prelude compression ratio of: " & $PRELUDE_RATIO)
+
+    proc do_detect() {.exportc.} =
+      let
+        text : string = $document.getElementById("text_input").value
+      var (d, s) = run_on_text_chunked(text)
+      var color = "rgba(255, 0, 0, " & $(s.round(3) * 10.0) & ")"
+      if d == "Human":
+        color = "rgba(0, 255, 0, " & $(s.round(3) * 10.0) & ")"
+      document.getElementById("output_span").textContent = d.cstring & ", confidence score of: " & ($s.round(6)).cstring
+      document.getElementById("output_span").style.backgroundColor = color.cstring
   
+  when defined(extension):
+    proc add_to_lp(text : cstring) {.exportc.} =
+      local_prelude = local_prelude & "\n".cstring & text
+      PRELUDE_RATIO = compress_str("")
+      console.log("New prelude compression ratio of: " & $PRELUDE_RATIO)
+
+    proc detect_string(s : cstring) : float {.exportc.} =
+      # Returns the opacity for the element containing the passed string (higher for human-generated)
+      var (d, s) = run_on_text_chunked($s)
+      if d == "Human":
+        return 1.0
+      var opacity = 1.0 - s.round(3) * 10
+      if opacity < 0.0:
+        opacity = 0.0
+      return opacity
+
   #window.onload = on_load
