@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "version": "0.2",
+    "name": "AI Noise-cancelling headphones",
+    "author": "jacob@thinkst.com",
+    "description": "An extension to filter out AI-generated noise from your browsing experience",
+    "permissions": [
+        "contextMenus",
+        "storage"
+    ],
+    "content_scripts": [
+        {
+            "js": ["scripts/nch.js"],
+            "matches": [
+                "*://*/*"
+                ]
+        }
+    ],
+    "background": {
+        "service_worker": "scripts/nch-worker.js"
+    }
+
+}
