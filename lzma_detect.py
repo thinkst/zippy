@@ -5,7 +5,7 @@
 # Author: Jacob Torrey <jacob@thinkst.com>
 
 import lzma, argparse, os, itertools
-import re
+import re, sys
 from typing import List, Optional, Tuple
 from multiprocessing import Pool, cpu_count
 
@@ -184,10 +184,14 @@ def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, p
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("sample_files", nargs='+', help='Text file(s) containing the sample to classify')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-s", help='Read from stdin until EOF is reached instead of from a file', required=False, action='store_true')
+    group.add_argument("sample_files", nargs='*', help='Text file(s) containing the sample to classify', default="")
     args = parser.parse_args()
-
-    for f in args.sample_files:
-        print(f)
-        if os.path.isfile(f):
-            print(str(run_on_file_chunked(f)))
+    if args.s:
+        print(str(run_on_text_chunked(''.join(list(sys.stdin)))))
+    else:
+        for f in args.sample_files:
+            print(f)
+            if os.path.isfile(f):
+                print(str(run_on_file_chunked(f)))
