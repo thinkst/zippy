@@ -2,7 +2,7 @@
 
 import pytest, os, jsonlines
 from warnings import warn
-from lzma_detect import run_on_file_chunked, run_on_text_chunked, PRELUDE_STR, LzmaLlmDetector
+from zippy import run_on_file_chunked, run_on_text_chunked, PRELUDE_STR, LzmaLlmDetector
 
 AI_SAMPLE_DIR = 'samples/llm-generated/'
 HUMAN_SAMPLE_DIR = 'samples/human-generated/'
