@@ -25,13 +25,6 @@ def clean_text(s : str) -> str:
 
     return s
 
-def to_english(s : str) -> str:
-    '''
-    Remove non-English (or names) from an input
-    '''
-
-    return s
-
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
 with open(PRELUDE_FILE, 'r') as fp:
@@ -190,6 +183,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.s:
         print(str(run_on_text_chunked(''.join(list(sys.stdin)))))
+    elif len(args.sample_files) == 0:
+        print("Please call with either a list of text files to analyze, or the -s flag to classify stdin.\nCall with the -h flag for additional help.")
     else:
         for f in args.sample_files:
             print(f)
