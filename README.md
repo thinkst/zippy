@@ -1,6 +1,6 @@
-# ai-detect: Fast methods to classify text as AI or human-generated
+# ZipPy: Fast method to classify text as AI or human-generated
 
-This is a research repo for fast AI detection methods as we experiment with different techniques.
+This is a research repo for fast AI detection using compression.
 While there are a number of existing LLM detection systems, they all use a large model trained on either an LLM or
 its training data to calculate the probability of each word given the preceeding, then calculating a score where
 the more high-probability tokens are more likely to be AI-originated. Techniques and tools in this repo are looking for
@@ -8,10 +8,7 @@ faster approximation to be embeddable and more scalable.
 
 ## LZMA compression detector (`lzma_detect.py` and `nlzmadetect`)
 
-[![Python classifiation accuracy testing](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml/badge.svg)](https://github.com/Tail-Pipe/ai-detect/actions/workflows/pytest.yml)
-[![Nim classification accuracy testing](https://github.com/Tail-Pipe/ai-detect/actions/workflows/nimtest.yml/badge.svg)](https://github.com/Tail-Pipe/ai-detect/actions/workflows/nimtest.yml)
-
-This is the first attempt, using the LZMA compression ratios as a way to indirectly measure the perplexity of a text.
+ZipPy uses the LZMA compression ratios as a way to indirectly measure the perplexity of a text.
 Compression ratios have been used in the past to [detect anomalies in network data](http://owncloud.unsri.ac.id/journal/security/ontheuse_compression_Network_anomaly_detec.pdf)
 for intrusion detection, so if perplexity is roughly a measure of anomalous tokens, it may be possible to use compression to detect low-perplexity text.
 LZMA creates a dictionary of seen tokens, and then uses though in place of future tokens. The dictionary size, token length, etc.
@@ -27,4 +24,3 @@ The leading LLM detection tools are [OpenAI's model detector (v2)](https://opena
 
 ![ROC curve of detection tools](https://github.com/Tail-Pipe/ai-detect/blob/main/ai_detect_roc.png?raw=true)
 
-***It should be noted that the evaluation is skewed by selecting only a subset of each dataset, as the DNN detectors perform better on more diverse inputs (e.g., code, foreign languages, etc.) whereas the LZMA-based detector works on inputs closer in style to the prelude data (i.e., English prose).**
