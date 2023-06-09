@@ -6,7 +6,7 @@ its training data to calculate the probability of each word given the preceeding
 the more high-probability tokens are more likely to be AI-originated. Techniques and tools in this repo are looking for
 faster approximation to be embeddable and more scalable.
 
-## LZMA compression detector (`lzma_detect.py` and `nlzmadetect`)
+## LZMA compression detector (`zippy.py` and `nlzmadetect`)
 
 ZipPy uses the LZMA compression ratios as a way to indirectly measure the perplexity of a text.
 Compression ratios have been used in the past to [detect anomalies in network data](http://owncloud.unsri.ac.id/journal/security/ontheuse_compression_Network_anomaly_detec.pdf)
