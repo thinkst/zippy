@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Code to attempt to detect AT-generated text [relatively] quickly via compression ratios
+# Code to attempt to detect AI-generated text [relatively] quickly via compression ratios
 # (C) 2023 Thinkst Applied Research, PTY
 # Author: Jacob Torrey <jacob@thinkst.com>
 
