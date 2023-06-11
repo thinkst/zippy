@@ -34,7 +34,7 @@ class LzmaLlmDetector:
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
     def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
-        self.PRESET : int = 1
+        self.PRESET : int = 2
         self.comp = lzma.LZMACompressor(preset=self.PRESET)
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
