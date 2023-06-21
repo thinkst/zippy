@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ZipPy: Fast method to classify text as AI or human-generated
 
 This is a research repo for fast AI detection using compression.
@@ -24,3 +25,7 @@ The leading LLM detection tools are [OpenAI's model detector (v2)](https://opena
 
 ![ROC curve of detection tools](https://github.com/thinkst/zippy/blob/main/ai_detect_roc.png?raw=true)
 
+=======
+# ai-detect
+Research repo for fast AI detection methods
+>>>>>>> 3c715ce (Initial commit)

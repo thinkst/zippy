@@ -8,7 +8,7 @@ AI_SAMPLE_DIR = 'samples/llm-generated/'
 HUMAN_SAMPLE_DIR = 'samples/human-generated/'
 
 MIN_LEN = 150
-NUM_JSONL_SAMPLES = 150
+NUM_JSONL_SAMPLES = 500
 
 ai_files = os.listdir(AI_SAMPLE_DIR)
 human_files = os.listdir(HUMAN_SAMPLE_DIR)
