@@ -20,6 +20,6 @@ dictionary, resulting in a worse compression ratio.
 
 ### Current evaluation
 
-Some of the leading LLM detection tools are [OpenAI's model detector (v2)](https://openai.com/blog/new-ai-classifier-for-indicating-ai-written-text), [GPTZero](https://gptzero.me/), [CrossPlag's AI detector](https://crossplag.com/ai-content-detector/), and [Roberta](https://huggingface.co/roberta-base-openai-detector). Here are each of them compared with the LZMA detector across the test datasets:
+Some of the leading LLM detection tools are ~~[OpenAI's model detector (v2)](https://openai.com/blog/new-ai-classifier-for-indicating-ai-written-text)~~, [GPTZero](https://gptzero.me/), [CrossPlag's AI detector](https://crossplag.com/ai-content-detector/), and [Roberta](https://huggingface.co/roberta-base-openai-detector). Here are each of them compared with the LZMA detector across the test datasets:
 
 ![ROC curve of detection tools](https://github.com/thinkst/zippy/blob/main/ai_detect_roc.png?raw=true)
