@@ -6,8 +6,10 @@
 
 import lzma, argparse, os, itertools
 import re, sys
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, TypeAlias
 from multiprocessing import Pool, cpu_count
+
+Score : TypeAlias = tuple[str, float]
 
 def clean_text(s : str) -> str:
     '''
@@ -49,6 +51,7 @@ class LzmaLlmDetector:
             with open(prelude_file, 'r') as fp:
                 self._compress_str(fp.read())
             self.prelude_ratio = self._finalize()
+            #print(prelude_file + ' ratio: ' + str(self.prelude_ratio))
             # Redo this to prime the compressor
             self.comp = lzma.LZMACompressor(preset=self.PRESET)
             with open(prelude_file, 'r') as fp:
@@ -91,7 +94,7 @@ class LzmaLlmDetector:
         self._compress_str(s)
         return (self.prelude_ratio, self._finalize())
 
-    def score_text(self, sample : str) -> Optional[Tuple[str, float]]:
+    def score_text(self, sample : str) -> Optional[Score]:
         '''
         Returns a tuple of a string (AI or Human) and a float confidence (higher is more confident) that the sample was generated 
         by either an AI or human. Returns None if it cannot make a determination
@@ -116,7 +119,7 @@ class LzmaLlmDetector:
         #    print("Very low-confidence determination of: " + determination)
         return (determination, abs(delta * 100))
         
-def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Tuple[str, float]]:
+def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Score]:
     '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
     with open(filename, 'r') as fp:
         l = LzmaLlmDetector(PRELUDE_FILE, fuzziness)
@@ -124,11 +127,14 @@ def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Tuple[str, floa
         #print('Calculating score for input of length ' + str(len(txt)))
         return l.score_text(txt)
 
-def _score_chunk(c : str, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Tuple[str, float]:
-        l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
+def _score_chunk(c : str, fuzziness : int = 3, prelude_file : Optional[str] = None, prelude_ratio : Optional[float] = None) -> Score:
+        if prelude_file != None:
+            l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_file=prelude_file)
+        else:
+            l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
         return l.score_text(c)
 
-def run_on_file_chunked(filename : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
+def run_on_file_chunked(filename : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Score]:
     '''
     Given a filename (and an optional chunk size and number of decimal places to round to) returns the score for the contents of that file.
     This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -138,7 +144,7 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1500, fuzziness : int
         contents = fp.read()
     return run_on_text_chunked(contents, chunk_size, fuzziness, prelude_ratio)
 
-def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Tuple[str, float]]:
+def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_file : Optional[str] = None, prelude_ratio : Optional[float] = None) -> Optional[Score]:
     '''
     Given a string (and an optional chunk size and number of decimal places to round to) returns the score for the passed string.
     This function chunks the input into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -157,11 +163,11 @@ def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, p
     scores = []
     if len(chunks) > 2:
         with Pool(cpu_count()) as pool:
-            for r in pool.starmap(_score_chunk, zip(chunks, itertools.repeat(fuzziness), itertools.repeat(prelude_ratio))):
+            for r in pool.starmap(_score_chunk, zip(chunks, itertools.repeat(fuzziness), itertools.repeat(prelude_file), itertools.repeat(prelude_ratio))):
                 scores.append(r)
     else:
         for c in chunks:
-            scores.append(_score_chunk(c, fuzziness=fuzziness, prelude_ratio=prelude_ratio))
+            scores.append(_score_chunk(c, fuzziness=fuzziness, prelude_file=prelude_file, prelude_ratio=prelude_ratio))
     ssum : float = 0.0
     for i, s in enumerate(scores):
         if s[0] == 'AI':
