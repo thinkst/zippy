@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pytest, os, jsonlines
+import pytest, os, jsonlines, csv
 from warnings import warn
 from zippy import run_on_file_chunked, run_on_text_chunked, PRELUDE_STR, LzmaLlmDetector
 
@@ -143,3 +143,30 @@ def test_cheat_polish_jsonl(i, record_property):
     (classification, score) = run_on_text_chunked(i.get('abstract', ''), fuzziness=FUZZINESS, prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'AI', CHEAT_POLISH_JSONL_FILE + ':' + str(i.get('id')) + ' (title: ' + i.get('title', "").replace('\n', ' ')[:50] + ') is an LLM-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
+
+CHEAT_VICUNAGEN_JSONL_FILE = 'samples/ieee-vicuna-generation.jsonl'
+vg_samples = []
+with jsonlines.open(CHEAT_VICUNAGEN_JSONL_FILE) as reader:
+    for obj in reader:
+        if len(obj.get('abstract', '')) >= MIN_LEN:
+            vg_samples.append(obj)
+
+@pytest.mark.parametrize('i', vg_samples[0:NUM_JSONL_SAMPLES])
+def test_vicuna_generation_jsonl(i, record_property):
+    (classification, score) = run_on_text_chunked(i.get('abstract', ''), fuzziness=FUZZINESS, prelude_ratio=PRELUDE_RATIO)
+    record_property("score", str(score))
+    assert classification == 'AI', CHEAT_VICUNAGEN_JSONL_FILE + ':' + str(i.get('id')) + ' (title: ' + i.get('title', "").replace('\n', ' ')[:50] + ') is an LLM-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
+
+GPTZERO_EVAL_FILE = 'samples/gptzero_eval.csv'
+ge_samples = []
+with open(GPTZERO_EVAL_FILE) as fp:
+    csvr = csv.DictReader(fp)
+    for obj in csvr:
+        if len(obj.get('Document', '')) >= MIN_LEN:
+            ge_samples.append(obj)
+
+@pytest.mark.parametrize('i', ge_samples[0:NUM_JSONL_SAMPLES])
+def test_gptzero_eval_dataset(i, record_property):
+    (classification, score) = run_on_text_chunked(i.get('Document', ''), fuzziness=FUZZINESS, prelude_ratio=PRELUDE_RATIO)
+    record_property("score", str(score))
+    assert classification == i.get('Label'), GPTZERO_EVAL_FILE + ':' + str(i.get('Index')) + ' was misclassified with confidence ' + str(round(score, 8))
