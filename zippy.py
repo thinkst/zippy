@@ -142,7 +142,7 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1500, fuzziness : int
     '''
     with open(filename, 'r') as fp:
         contents = fp.read()
-    return run_on_text_chunked(contents, chunk_size, fuzziness, prelude_ratio)
+    return run_on_text_chunked(contents, chunk_size, fuzziness=fuzziness, prelude_ratio=prelude_ratio)
 
 def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_file : Optional[str] = None, prelude_ratio : Optional[float] = None) -> Optional[Score]:
     '''

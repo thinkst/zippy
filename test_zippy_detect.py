@@ -165,8 +165,14 @@ with open(GPTZERO_EVAL_FILE) as fp:
         if len(obj.get('Document', '')) >= MIN_LEN:
             ge_samples.append(obj)
 
-@pytest.mark.parametrize('i', ge_samples[0:NUM_JSONL_SAMPLES])
-def test_gptzero_eval_dataset(i, record_property):
+@pytest.mark.parametrize('i', list(filter(lambda x: x.get('Label') == 'Human', ge_samples[0:NUM_JSONL_SAMPLES])))
+def test_gptzero_eval_dataset_human(i, record_property):
+    (classification, score) = run_on_text_chunked(i.get('Document', ''), fuzziness=FUZZINESS, prelude_ratio=PRELUDE_RATIO)
+    record_property("score", str(score))
+    assert classification == i.get('Label'), GPTZERO_EVAL_FILE + ':' + str(i.get('Index')) + ' was misclassified with confidence ' + str(round(score, 8))
+
+@pytest.mark.parametrize('i', list(filter(lambda x: x.get('Label') == 'AI', ge_samples[0:NUM_JSONL_SAMPLES])))
+def test_gptzero_eval_dataset_ai(i, record_property):
     (classification, score) = run_on_text_chunked(i.get('Document', ''), fuzziness=FUZZINESS, prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == i.get('Label'), GPTZERO_EVAL_FILE + ':' + str(i.get('Index')) + ' was misclassified with confidence ' + str(round(score, 8))
