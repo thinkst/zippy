@@ -3,7 +3,6 @@
 import requests, re, os, time
 from typing import Optional, Dict, Tuple
 
-API_KEY = os.getenv('GPTZERO_APIKEY')
 API_URL = 'https://j1o8u6du62.execute-api.eu-central-1.amazonaws.com/production/detect'
 
 def make_req(text : str) -> Optional[Dict]:
