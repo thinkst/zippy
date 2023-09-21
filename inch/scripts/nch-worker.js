@@ -45,10 +45,10 @@ async function query(text) {
 }
 
 // Tracking tabs that are dead to avoid sending responses to.
-var send_errs = 0;
+var dead_tabs = 0;
 async function return_results(tab, id, score) {
     const msg = {id: id, opacity: score};
-    chrome.tabs.sendMessage(tab, msg, {}, function(res) { if (chrome.runtime.lastError) send_errs++; });
+    chrome.tabs.sendMessage(tab, msg, {}, function(_res) { if (chrome.runtime.lastError) dead_tabs++; });
 }
 
 function handle_req(msg, sender, _sendResp) {
