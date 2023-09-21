@@ -17,7 +17,7 @@ def make_req(text : str) -> Optional[str]:
 		'Referer': 'https://contentatscale.ai/ai-content-detector/' 
     }
     data = 'content=' + urllib.parse.quote_plus(text) + '&action=checkaiscore'
-    c = httpx.Client(http2=True, timeout=30.0)
+    c = httpx.Client(http2=True, timeout=60.0)
     res = c.post(API_URL, headers=headers, data=data)
     if res.status_code != 200:
         print(res.text)
@@ -28,7 +28,7 @@ def make_req(text : str) -> Optional[str]:
     return res.json().get('score')
 
 def classify_text(s : str) -> Optional[Tuple[str, float]]:
-    res = int(make_req(s)) / 100
+    res = int(make_req(s)) / 100.0
     if res is None:
         print("Unable to classify!")
         return None
@@ -39,9 +39,9 @@ def classify_text(s : str) -> Optional[Tuple[str, float]]:
         except TypeError as e:
             print("Unable to convert " + str(res) + " to float!")
         if res < 0.5:
-            return ('AI', res)
+            return ('AI', 1 - res)
         else:
-            return ('Human', 1 - res)
+            return ('Human', res)
 
 def run_on_file_chunked(filename : str, chunk_size : int = 3000) -> Optional[Tuple[str, float]]:
 	'''
