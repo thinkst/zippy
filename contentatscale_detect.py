@@ -17,7 +17,7 @@ def make_req(text : str) -> Optional[str]:
 		'Referer': 'https://contentatscale.ai/ai-content-detector/' 
     }
     data = 'content=' + urllib.parse.quote_plus(text) + '&action=checkaiscore'
-    c = httpx.Client(http2=True, timeout=20.0)
+    c = httpx.Client(http2=True, timeout=30.0)
     res = c.post(API_URL, headers=headers, data=data)
     if res.status_code != 200:
         print(res.text)
