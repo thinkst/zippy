@@ -25,6 +25,12 @@
                 document.getElementById("addlp").hidden = false;
                 console.log("Processing " + ilen + " bytes took " + (end - start) + " ms");
             }
+
+            async function ZLIB_compress(s) {
+                const blobs = new Blob([s]).stream();
+                const out = await (new Response(blobs.pipeThrough(new CompressionStream('deflate-raw'))).blob());
+                return new Uint8Array(await out.arrayBuffer());
+            }
         </script>
         <script src="./src/nlzmadetect.js" type="application/javascript"></script>
         <div id="footer" style="text-align: center; font-family: Arial, Helvetica, sans-serif;">
