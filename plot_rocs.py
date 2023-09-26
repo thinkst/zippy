@@ -6,7 +6,7 @@ from sklearn.metrics import roc_curve, auc
 import re
 from junitparser import JUnitXml
 
-MODELS = ['zippy', 'roberta', 'gptzero', 'crossplag', 'contentatscale']
+MODELS = ['zippy-lzma', 'zippy-zlib', 'roberta', 'gptzero', 'crossplag', 'contentatscale']
 SKIPCASES = ['gpt2', 'gpt3']
 
 MAX_PER_CASE = 500

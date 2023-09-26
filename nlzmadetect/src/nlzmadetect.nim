@@ -203,5 +203,3 @@ when defined(js) and isMainModule:
       if opacity < 0.0:
         opacity = 0.0
       return opacity
-
-  #window.onload = on_load

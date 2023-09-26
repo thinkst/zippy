@@ -5,11 +5,20 @@
 # Author: Jacob Torrey <jacob@thinkst.com>
 
 import lzma, argparse, os, itertools
+from zlib import compressobj, Z_FINISH
 import re, sys
+from abc import ABC, abstractmethod
+from enum import Enum
 from typing import List, Optional, Tuple, TypeAlias
 from multiprocessing import Pool, cpu_count
 
 Score : TypeAlias = tuple[str, float]
+
+class CompressionEngine(Enum):
+    LZMA = 1
+    ZLIB = 2
+
+ENGINE : CompressionEngine = CompressionEngine.ZLIB
 
 def clean_text(s : str) -> str:
     '''
@@ -32,9 +41,61 @@ PRELUDE_FILE : str = 'ai-generated.txt'
 with open(PRELUDE_FILE, 'r') as fp:
     PRELUDE_STR = clean_text(fp.read())
 
-class LzmaLlmDetector:
+class AIDetector(ABC):
+    '''
+    Base class for AI detection
+    '''
+    @abstractmethod
+    def score_text(self, sample : str) -> Optional[Score]:
+        pass
+
+class ZlibLlmDetector(AIDetector):
+    '''Class providing functionality to attempt to detect LLM/generative AI generated text using the zlib compression algorithm'''
+    def __init__(self, prelude_file : Optional[str] = None, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None):
+        self.PRESET = 9
+        self.WBITS = -15
+        self.prelude_ratio = 0.0
+        if prelude_ratio != None:
+            self.prelude_ratio = prelude_ratio
+        
+        if prelude_file != None:
+            with open(prelude_file) as fp:
+                self.prelude_str = fp.read()
+                self.prelude_ratio = self._compress(self.prelude_str)
+    
+        if prelude_str != None:
+            self.prelude_str = prelude_str
+            self.prelude_ratio = self._compress(self.prelude_str)
+
+    def _compress(self, s : str) -> float:
+        orig_len = len(s.encode())
+        c = compressobj(level=self.PRESET, wbits=self.WBITS, memLevel=9)
+        bytes = c.compress(s.encode())
+        bytes += c.flush(Z_FINISH)
+        c_len = len(bytes)
+        #c_len = len(compress(s.encode(), level=self.PRESET, wbits=self.WBITS))
+        return c_len / orig_len
+    
+    def score_text(self, sample: str) -> Score | None:
+        '''
+        Returns a tuple of a string (AI or Human) and a float confidence (higher is more confident) that the sample was generated 
+        by either an AI or human. Returns None if it cannot make a determination
+        '''
+        if self.prelude_ratio == 0.0:
+            return None
+        sample_score = self._compress(self.prelude_str + sample)
+        #print(str((self.prelude_ratio, sample_score)))
+        delta = self.prelude_ratio - sample_score
+        determination = 'AI'
+        if delta < 0:
+            determination = 'Human'
+
+        return (determination, abs(delta * 100))
+
+
+class LzmaLlmDetector(AIDetector):
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
-    def __init__(self, prelude_file : Optional[str] = None, fuzziness_digits : int = 3, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
+    def __init__(self, prelude_file : Optional[str] = None, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
         self.PRESET : int = 2
         self.comp = lzma.LZMACompressor(preset=self.PRESET)
@@ -43,7 +104,6 @@ class LzmaLlmDetector:
         self.prelude_ratio : float = 0.0
         if prelude_ratio != None:
             self.prelude_ratio = prelude_ratio
-        self.FUZZINESS_THRESHOLD = fuzziness_digits
         self.SHORT_SAMPLE_THRESHOLD : int = 350 # What sample length is considered "short"
 
         if prelude_file != None:
@@ -102,39 +162,39 @@ class LzmaLlmDetector:
         if self.prelude_ratio == 0.0:
             return None
         (prelude_score, sample_score) = self.get_compression_ratio(sample)
-        #print(str((prelude_score, sample_score)))
+        print(str((self.prelude_ratio, sample_score)))
         delta = prelude_score - sample_score
         determination = 'AI'
         if delta < 0:
             determination = 'Human'
 
-        # If the sample doesn't 'move the needle', it's very close
-        # if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) >= self.SHORT_SAMPLE_THRESHOLD:
-        #     #print('Sample len to default to AI: ' + str(len(sample)))
-        #     determination = 'AI'
-        # if round(delta, self.FUZZINESS_THRESHOLD) == 0 and len(sample) < self.SHORT_SAMPLE_THRESHOLD:
-        #     #print('Sample len to default to Human: ' + str(len(sample)))
-        #     determination = 'Human'
-        #if abs(delta * 100) < .1 and determination == 'AI':
-        #    print("Very low-confidence determination of: " + determination)
         return (determination, abs(delta * 100))
         
-def run_on_file(filename : str, fuzziness : int = 3) -> Optional[Score]:
+def run_on_file(filename : str) -> Optional[Score]:
     '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
     with open(filename, 'r') as fp:
-        l = LzmaLlmDetector(PRELUDE_FILE, fuzziness)
+        if ENGINE == CompressionEngine.LZMA:
+            l = LzmaLlmDetector(prelude_file=PRELUDE_FILE)
+        elif ENGINE == CompressionEngine.ZLIB:
+            l = ZlibLlmDetector(prelude_file=PRELUDE_FILE)
         txt = fp.read()
         #print('Calculating score for input of length ' + str(len(txt)))
         return l.score_text(txt)
 
-def _score_chunk(c : str, fuzziness : int = 3, prelude_file : Optional[str] = None, prelude_ratio : Optional[float] = None) -> Score:
+def _score_chunk(c : str, prelude_file : Optional[str] = None, prelude_ratio : Optional[float] = None) -> Score:
         if prelude_file != None:
-            l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_file=prelude_file)
+            if ENGINE == CompressionEngine.LZMA:
+                l = LzmaLlmDetector(prelude_file=prelude_file)
+            if ENGINE == CompressionEngine.ZLIB:
+                l = ZlibLlmDetector(prelude_file=prelude_file)
         else:
-            l = LzmaLlmDetector(fuzziness_digits=fuzziness, prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
+            if ENGINE == CompressionEngine.LZMA:
+                l = LzmaLlmDetector(prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
+            if ENGINE == CompressionEngine.ZLIB:
+                l = ZlibLlmDetector(prelude_str=PRELUDE_STR, prelude_ratio=prelude_ratio)
         return l.score_text(c)
 
-def run_on_file_chunked(filename : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_ratio : Optional[float] = None) -> Optional[Score]:
+def run_on_file_chunked(filename : str, chunk_size : int = 1500, prelude_ratio : Optional[float] = None) -> Optional[Score]:
     '''
     Given a filename (and an optional chunk size and number of decimal places to round to) returns the score for the contents of that file.
     This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -142,9 +202,9 @@ def run_on_file_chunked(filename : str, chunk_size : int = 1500, fuzziness : int
     '''
     with open(filename, 'r') as fp:
         contents = fp.read()
-    return run_on_text_chunked(contents, chunk_size, fuzziness=fuzziness, prelude_ratio=prelude_ratio)
+    return run_on_text_chunked(contents, chunk_size, prelude_ratio=prelude_ratio)
 
-def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, prelude_file : Optional[str] = None, prelude_ratio : Optional[float] = None) -> Optional[Score]:
+def run_on_text_chunked(s : str, chunk_size : int = 1500, prelude_file : Optional[str] = None, prelude_ratio : Optional[float] = None) -> Optional[Score]:
     '''
     Given a string (and an optional chunk size and number of decimal places to round to) returns the score for the passed string.
     This function chunks the input into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
@@ -163,11 +223,11 @@ def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, p
     scores = []
     if len(chunks) > 2:
         with Pool(cpu_count()) as pool:
-            for r in pool.starmap(_score_chunk, zip(chunks, itertools.repeat(fuzziness), itertools.repeat(prelude_file), itertools.repeat(prelude_ratio))):
+            for r in pool.starmap(_score_chunk, zip(chunks, itertools.repeat(prelude_file), itertools.repeat(prelude_ratio))):
                 scores.append(r)
     else:
         for c in chunks:
-            scores.append(_score_chunk(c, fuzziness=fuzziness, prelude_file=prelude_file, prelude_ratio=prelude_ratio))
+            scores.append(_score_chunk(c, prelude_file=prelude_file, prelude_ratio=prelude_ratio))
     ssum : float = 0.0
     for i, s in enumerate(scores):
         if s[0] == 'AI':
@@ -183,10 +243,16 @@ def run_on_text_chunked(s : str, chunk_size : int = 1500, fuzziness : int = 3, p
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("-e", choices=['zlib', 'lzma'], help='Which compression engine to use: lzma or zlib', default='lzma', required=False)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", help='Read from stdin until EOF is reached instead of from a file', required=False, action='store_true')
     group.add_argument("sample_files", nargs='*', help='Text file(s) containing the sample to classify', default="")
     args = parser.parse_args()
+    if args.e:
+        if args.e == 'lzma':
+            ENGINE = CompressionEngine.LZMA
+        elif args.e == 'zlib':
+            ENGINE = CompressionEngine.ZLIB
     if args.s:
         print(str(run_on_text_chunked(''.join(list(sys.stdin)))))
     elif len(args.sample_files) == 0:
