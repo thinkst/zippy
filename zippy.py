@@ -34,7 +34,7 @@ def clean_text(s : str) -> str:
     s = re.sub(' \n', '\n', s)
 
     # Remove non-alphanumeric chars
-    s = re.sub('[^0-9A-Za-z,\.\(\) \n]', '', s)#.lower()
+    s = re.sub(r'[^0-9A-Za-z,\.\(\) \n]', '', s)#.lower()
 
     return s
 
@@ -190,24 +190,25 @@ class Zippy:
     '''
     Class to wrap the functionality of Zippy
     '''
-    def __init__(self, engine : CompressionEngine = CompressionEngine.LZMA, preset : Optional[int] = None) -> None:
+    def __init__(self, engine : CompressionEngine = CompressionEngine.LZMA, preset : Optional[int] = None, prelude_file : str = PRELUDE_FILE) -> None:
         self.ENGINE = engine
         self.PRESET = preset
+        self.PRELUDE_FILE = prelude_file
         if engine == CompressionEngine.LZMA:
             if self.PRESET:
-                self.detector = LzmaLlmDetector(prelude_file=PRELUDE_FILE, preset=self.PRESET)
+                self.detector = LzmaLlmDetector(prelude_file=self.PRELUDE_FILE, preset=self.PRESET)
             else:
-                self.detector = LzmaLlmDetector(prelude_file=PRELUDE_FILE)
+                self.detector = LzmaLlmDetector(prelude_file=self.PRELUDE_FILE)
         elif engine == CompressionEngine.BROTLI:
             if self.PRESET:
-                self.detector = BrotliLlmDetector(prelude_file=PRELUDE_FILE, preset=self.PRESET)
+                self.detector = BrotliLlmDetector(prelude_file=self.PRELUDE_FILE, preset=self.PRESET)
             else:
-                self.detector = BrotliLlmDetector(prelude_file=PRELUDE_FILE)
+                self.detector = BrotliLlmDetector(prelude_file=self.PRELUDE_FILE)
         elif engine == CompressionEngine.ZLIB:
             if self.PRESET:
-                self.detector = ZlibLlmDetector(prelude_file=PRELUDE_FILE, preset=self.PRESET)
+                self.detector = ZlibLlmDetector(prelude_file=self.PRELUDE_FILE, preset=self.PRESET)
             else:
-                self.detector = ZlibLlmDetector(prelude_file=PRELUDE_FILE)
+                self.detector = ZlibLlmDetector(prelude_file=self.PRELUDE_FILE)
 
     def run_on_file(self, filename : str) -> Optional[Score]:
         '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
