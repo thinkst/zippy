@@ -2,7 +2,7 @@
 
 import pytest, os, jsonlines, csv
 from warnings import warn
-from zippy import run_on_file_chunked, run_on_text_chunked, PRELUDE_STR, LzmaLlmDetector, CompressionEngine, ZlibLlmDetector, ENGINE
+from zippy import Zippy, EnsembledZippy, PRELUDE_STR, LzmaLlmDetector, BrotliLlmDetector, ZlibLlmDetector, CompressionEngine
 import zippy
 
 AI_SAMPLE_DIR = 'samples/llm-generated/'
@@ -16,19 +16,34 @@ human_files = os.listdir(HUMAN_SAMPLE_DIR)
 
 CONFIDENCE_THRESHOLD : float = 0.00 # What confidence to treat as error vs warning
 
-if ENGINE == CompressionEngine.LZMA:
-    PRELUDE_RATIO = LzmaLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
-elif ENGINE == CompressionEngine.ZLIB:
-    PRELUDE_RATIO = ZlibLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
+# Bool on whether to ensemble the models or run a single model
+ENSEMBLE = True
+
+if not ENSEMBLE:
+    # What compression engine to use for the test
+    ENGINE = CompressionEngine.LZMA
+
+    if ENGINE == CompressionEngine.LZMA:
+        PRELUDE_RATIO = LzmaLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
+    elif ENGINE == CompressionEngine.ZLIB:
+        PRELUDE_RATIO = ZlibLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
+    elif ENGINE == CompressionEngine.BROTLI:
+        PRELUDE_RATIO = BrotliLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
+
+    zippy = Zippy(ENGINE)
+
+else:
+    zippy = EnsembledZippy()
+    PRELUDE_RATIO = None
 
 def test_training_file(record_property):
-    (classification, score) = run_on_file_chunked('ai-generated.txt')
+    (classification, score) = zippy.run_on_file_chunked('ai-generated.txt')
     record_property("score", str(score))
     assert classification == 'AI', 'The training corpus should always be detected as AI-generated... since it is'
 
 @pytest.mark.parametrize('f', human_files)
 def test_human_samples(f, record_property):
-    (classification, score) = run_on_file_chunked(HUMAN_SAMPLE_DIR + f, prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_file_chunked(HUMAN_SAMPLE_DIR + f, prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     if score > CONFIDENCE_THRESHOLD:
         assert classification == 'Human', f + ' is a human-generated file, misclassified as AI-generated with confidence ' + str(round(score, 8))
@@ -40,7 +55,7 @@ def test_human_samples(f, record_property):
 
 @pytest.mark.parametrize('f', ai_files)
 def test_llm_sample(f, record_property):
-   (classification, score) = run_on_file_chunked(AI_SAMPLE_DIR + f, prelude_ratio=PRELUDE_RATIO)
+   (classification, score) = zippy.run_on_file_chunked(AI_SAMPLE_DIR + f, prelude_ratio=PRELUDE_RATIO)
    record_property("score", str(score))
    if score > CONFIDENCE_THRESHOLD:
        assert classification == 'AI', f + ' is an LLM-generated file, misclassified as human-generated with confidence ' + str(round(score, 8))
@@ -59,7 +74,7 @@ with jsonlines.open(HUMAN_JSONL_FILE) as reader:
 
 @pytest.mark.parametrize('i', human_samples[0:NUM_JSONL_SAMPLES])
 def test_human_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('text', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('text', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'Human', HUMAN_JSONL_FILE + ':' + str(i.get('id')) + ' (len: ' + str(i.get('length', -1)) + ') is a human-generated sample, misclassified as AI-generated with confidence ' + str(round(score, 8))
 
@@ -98,13 +113,13 @@ with jsonlines.open(NEWS_JSONL_FILE) as reader:
 
 @pytest.mark.parametrize('i', news_samples[0:NUM_JSONL_SAMPLES])
 def test_humannews_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('human', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('human', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'Human', NEWS_JSONL_FILE + ' is a human-generated sample, misclassified as AI-generated with confidence ' + str(round(score, 8))
 
 @pytest.mark.parametrize('i', news_samples[0:NUM_JSONL_SAMPLES])
 def test_chatgptnews_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('chatgpt', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('chatgpt', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'AI', NEWS_JSONL_FILE + ' is a AI-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
 
@@ -117,7 +132,7 @@ with jsonlines.open(CHEAT_HUMAN_JSONL_FILE) as reader:
 
 @pytest.mark.parametrize('i', ch_samples[0:NUM_JSONL_SAMPLES])
 def test_cheat_human_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'Human', CHEAT_HUMAN_JSONL_FILE + ':' + str(i.get('id')) + ' [' + str(len(i.get('abstract', ''))) + '] (title: ' + i.get('title', "").replace('\n', ' ')[:15] + ') is a human-generated sample, misclassified as AI-generated with confidence ' + str(round(score, 8))
 
@@ -130,7 +145,7 @@ with jsonlines.open(CHEAT_GEN_JSONL_FILE) as reader:
 
 @pytest.mark.parametrize('i', cg_samples[0:NUM_JSONL_SAMPLES])
 def test_cheat_generation_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'AI', CHEAT_GEN_JSONL_FILE + ':' + str(i.get('id')) + ' (title: ' + i.get('title', "").replace('\n', ' ')[:50] + ') is an LLM-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
 
@@ -143,7 +158,7 @@ with jsonlines.open(CHEAT_POLISH_JSONL_FILE) as reader:
 
 @pytest.mark.parametrize('i', cp_samples[0:NUM_JSONL_SAMPLES])
 def test_cheat_polish_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'AI', CHEAT_POLISH_JSONL_FILE + ':' + str(i.get('id')) + ' (title: ' + i.get('title', "").replace('\n', ' ')[:50] + ') is an LLM-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
 
@@ -156,7 +171,7 @@ with jsonlines.open(CHEAT_VICUNAGEN_JSONL_FILE) as reader:
 
 @pytest.mark.parametrize('i', vg_samples[0:NUM_JSONL_SAMPLES])
 def test_vicuna_generation_jsonl(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('abstract', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == 'AI', CHEAT_VICUNAGEN_JSONL_FILE + ':' + str(i.get('id')) + ' (title: ' + i.get('title', "").replace('\n', ' ')[:50] + ') is an LLM-generated sample, misclassified as human-generated with confidence ' + str(round(score, 8))
 
@@ -170,12 +185,12 @@ with open(GPTZERO_EVAL_FILE) as fp:
 
 @pytest.mark.parametrize('i', list(filter(lambda x: x.get('Label') == 'Human', ge_samples[0:NUM_JSONL_SAMPLES])))
 def test_gptzero_eval_dataset_human(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('Document', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('Document', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == i.get('Label'), GPTZERO_EVAL_FILE + ':' + str(i.get('Index')) + ' was misclassified with confidence ' + str(round(score, 8))
 
 @pytest.mark.parametrize('i', list(filter(lambda x: x.get('Label') == 'AI', ge_samples[0:NUM_JSONL_SAMPLES])))
 def test_gptzero_eval_dataset_ai(i, record_property):
-    (classification, score) = run_on_text_chunked(i.get('Document', ''), prelude_ratio=PRELUDE_RATIO)
+    (classification, score) = zippy.run_on_text_chunked(i.get('Document', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == i.get('Label'), GPTZERO_EVAL_FILE + ':' + str(i.get('Index')) + ' was misclassified with confidence ' + str(round(score, 8))
