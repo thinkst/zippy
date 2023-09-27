@@ -1,7 +1,10 @@
 import unittest
 import nlzmadetect
-import std/os
+import std/[os, async]
 import strutils
+
+proc awaitScore(s : string) : (string, float64) =
+    return read run_on_text_chunked(s)
 
 suite "Test the LZMA detector against LLM-generated files":
     var files : seq[string] = @[]
@@ -12,7 +15,7 @@ suite "Test the LZMA detector against LLM-generated files":
 
     test "Classify LLM-generated samples":
         for f in files:
-            let (d, s) = run_on_text_chunked(readFile f)
+            let (d, s) = awaitScore(readFile f) # run_on_text_chunked(readFile f)
             if d == "AI":
                 passed += 1
             else:
