@@ -45,4 +45,4 @@ samples/human-generated/about_me.txt
 ('Human', 0.06013429262166636)
 ```
 
-If you want to use the ZipPy technology in your browser, check out the [Chrome extension](https://chrome.google.com/webstore/detail/ai-noise-cancelling-headp/okghlbkbacncfnfcielbncabioedklcn) that runs ZipPy in-browser to flag potentially AI-generated content.
+If you want to use the ZipPy technology in your browser, check out the [Chrome extension](https://chrome.google.com/webstore/detail/ai-noise-cancelling-headp/okghlbkbacncfnfcielbncabioedklcn) or the [Firefox extension](https://addons.mozilla.org/en-US/firefox/addon/ai-noise-cancelling-headphones/) that runs ZipPy in-browser to flag potentially AI-generated content.
