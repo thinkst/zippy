@@ -6,7 +6,7 @@ from sklearn.metrics import roc_curve, auc
 import re
 from junitparser import JUnitXml
 
-MODELS = ['zippy-lzma', 'zippy-zlib', 'roberta', 'gptzero', 'crossplag', 'contentatscale']
+MODELS = ['zippy-lzma', 'contentatscale', 'roberta', 'gptzero', 'crossplag']
 SKIPCASES = ['gpt2', 'gpt3']
 
 MAX_PER_CASE = 500
@@ -14,7 +14,7 @@ MAX_PER_CASE = 500
 plt.figure()
 
 for model in MODELS:
-    xml = JUnitXml.fromfile(f'{model}-report.xml')
+    xml = JUnitXml.fromfile(f'test_results/{model}-report.xml')
     cases = []
     for suite in xml:
         for case in suite:
@@ -61,6 +61,11 @@ for model in MODELS:
     y_scores = np.array(scores) 
     print("Failures per case for " + model)
     print(fails_per_case)
+    tf = 0
+    for k in fails_per_case.keys():
+        tf += fails_per_case[k]
+    print('Total fails: ' + str(tf))
+    tp = len(cases) - tf
     # Compute the false positive rate (FPR), true positive rate (TPR), and threshold values
     fpr, tpr, thresholds = roc_curve(y_true, y_scores)
     gmeans = np.sqrt(tpr * (1-fpr))
@@ -73,7 +78,7 @@ for model in MODELS:
     roc_auc = auc(fpr, tpr)
 
     # Plot the ROC curve
-    plt.plot(fpr, tpr, lw=2, label=model.capitalize() + ': ROC curve (AUC = %0.2f)' % roc_auc)
+    plt.plot(fpr, tpr, lw=2, label=f'{model.capitalize()}: ROC curve (%Acc = {tp/len(cases):0.2f}; AUC = {roc_auc:0.2f})')
     plt.scatter(fpr[ix], tpr[ix], marker='o', color='black')#, label=model.capitalize() + ': Best @ threshold = %0.2f' % thresholds[ix])
 
 plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label="Random classifier")
