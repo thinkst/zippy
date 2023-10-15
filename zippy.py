@@ -142,7 +142,7 @@ class ZlibLlmDetector(AIDetector):
 
 class LzmaLlmDetector(AIDetector):
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
-    def __init__(self, prelude_file : Optional[str] = None, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None, preset : int = 3) -> None:
+    def __init__(self, prelude_file : Optional[str] = None, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None, preset : int = 4) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
         self.PRESET : int = preset
         self.c_buf : List[bytes] = []
@@ -332,6 +332,7 @@ class EnsembledZippy:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("-p", required=False, help="Preset to use with compressor, higher values are slower but provide better compression")
     parser.add_argument("-e", choices=['zlib', 'lzma', 'brotli', 'ensemble'], help='Which compression engine to use: lzma, zlib, brotli, or an ensemble of all engines', default='lzma', required=False)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", help='Read from stdin until EOF is reached instead of from a file', required=False, action='store_true')
@@ -349,7 +350,10 @@ if __name__ == '__main__':
             engine = None
     if args.s:
         if engine:
-            z = Zippy(engine)
+            if args.p:
+                z = Zippy(engine, preset=int(args.p))
+            else:
+                z = Zippy(engine)
         else:
             z = EnsembledZippy()
         print(str(z.run_on_text_chunked(''.join(list(sys.stdin)))))
@@ -357,7 +361,10 @@ if __name__ == '__main__':
         print("Please call with either a list of text files to analyze, or the -s flag to classify stdin.\nCall with the -h flag for additional help.")
     else:
         if engine:
-            z = Zippy(engine)
+            if args.p:
+                z = Zippy(engine, preset=int(args.p))
+            else:
+                z = Zippy(engine)
         else:
             z = EnsembledZippy()
         for f in args.sample_files:
