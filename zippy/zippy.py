@@ -14,6 +14,7 @@ from enum import Enum
 from math import ceil
 from typing import List, Optional, Tuple, TypeAlias
 from multiprocessing import Pool, cpu_count
+from importlib.resources import files
 
 Score : TypeAlias = tuple[str, float]
 
@@ -40,8 +41,7 @@ def clean_text(s : str) -> str:
 
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
-with open(PRELUDE_FILE, 'r', encoding='utf-8') as fp:
-    PRELUDE_STR = clean_text(fp.read())
+PRELUDE_STR = clean_text(files('zippy').joinpath(PRELUDE_FILE).read_text())
 
 class AIDetector(ABC):
     '''
@@ -160,6 +160,7 @@ class LzmaLlmDetector(AIDetector):
             #print(prelude_file + ' ratio: ' + str(self.prelude_ratio))
 
         if prelude_str != None:
+            self.prelude_str = prelude_str
             if self.prelude_ratio == 0.0:
                 self.prelude_ratio = self._compress(prelude_str)
 
@@ -193,22 +194,28 @@ class Zippy:
     def __init__(self, engine : CompressionEngine = CompressionEngine.LZMA, preset : Optional[int] = None, prelude_file : str = PRELUDE_FILE) -> None:
         self.ENGINE = engine
         self.PRESET = preset
-        self.PRELUDE_FILE = prelude_file
+        if prelude_file == PRELUDE_FILE:
+            self.PRELUDE_FILE = str(files('zippy').joinpath(PRELUDE_FILE))
+            self.PRELUDE_STR = clean_text(files('zippy').joinpath(PRELUDE_FILE).read_text())
+        else:
+            self.PRELUDE_FILE = prelude_file
+            with open(self.PRELUDE_FILE, encoding='utf-8') as fp:
+                self.PRELUDE_STR = clean_text(fp.read())
         if engine == CompressionEngine.LZMA:
             if self.PRESET:
-                self.detector = LzmaLlmDetector(prelude_file=self.PRELUDE_FILE, preset=self.PRESET)
+                self.detector = LzmaLlmDetector(prelude_str=self.PRELUDE_STR, preset=self.PRESET)
             else:
-                self.detector = LzmaLlmDetector(prelude_file=self.PRELUDE_FILE)
+                self.detector = LzmaLlmDetector(prelude_str=self.PRELUDE_STR)
         elif engine == CompressionEngine.BROTLI:
             if self.PRESET:
-                self.detector = BrotliLlmDetector(prelude_file=self.PRELUDE_FILE, preset=self.PRESET)
+                self.detector = BrotliLlmDetector(prelude_str=self.PRELUDE_STR, preset=self.PRESET)
             else:
-                self.detector = BrotliLlmDetector(prelude_file=self.PRELUDE_FILE)
+                self.detector = BrotliLlmDetector(prelude_str=self.PRELUDE_STR)
         elif engine == CompressionEngine.ZLIB:
             if self.PRESET:
-                self.detector = ZlibLlmDetector(prelude_file=self.PRELUDE_FILE, preset=self.PRESET)
+                self.detector = ZlibLlmDetector(prelude_str=self.PRELUDE_STR, preset=self.PRESET)
             else:
-                self.detector = ZlibLlmDetector(prelude_file=self.PRELUDE_FILE)
+                self.detector = ZlibLlmDetector(prelude_str=self.PRELUDE_STR)
 
     def run_on_file(self, filename : str) -> Optional[Score]:
         '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''

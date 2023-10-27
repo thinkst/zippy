@@ -37,7 +37,7 @@ else:
     PRELUDE_RATIO = None
 
 def test_training_file(record_property):
-    (classification, score) = zippy.run_on_file_chunked('ai-generated.txt')
+    (classification, score) = zippy.run_on_file_chunked('zippy/ai-generated.txt')
     record_property("score", str(score))
     assert classification == 'AI', 'The training corpus should always be detected as AI-generated... since it is'
 

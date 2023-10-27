@@ -29,9 +29,17 @@ Here are each of them compared with both the LZMA and zlib detector across the t
 ### Usage
 
 ZipPy will read files passed as command-line arguments, or will read from stdin to allow for piping of text to it. 
+
+First, build and install the tool:
 ```
-$ python3 zippy/zippy.py -h
-usage: zippy.py [-h] [-p P] [-e {zlib,lzma,brotli,ensemble}] [-s | sample_files ...]
+$ python3 setup.py build && python3 setup.py install
+```
+
+It will install a new script (`zippy`) that you can use directly:
+
+```
+$ zippy -h
+usage: zippy [-h] [-p P] [-e {zlib,lzma,brotli,ensemble}] [-s | sample_files ...]
 
 positional arguments:
   sample_files          Text file(s) containing the sample to classify
@@ -42,7 +50,7 @@ options:
   -e {zlib,lzma,brotli,ensemble}
                         Which compression engine to use: lzma, zlib, brotli, or an ensemble of all engines
   -s                    Read from stdin until EOF is reached instead of from a file
-$ python3 zippy/zippy.py samples/human-generated/about_me.txt 
+$ zippy samples/human-generated/about_me.txt 
 samples/human-generated/about_me.txt
 ('Human', 0.06013429262166636)
 ```
