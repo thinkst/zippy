@@ -23,7 +23,7 @@ const SHORT_SAMPLE_THRESHOLD = 350
 
 const ACTIVE_ENGINE = Engine.LZMAEngine
 
-const PRELUDE_FILE = "../../ai-generated.txt"
+const PRELUDE_FILE = "../../zippy/ai-generated.txt"
 const PRELUDE_STR {.exportc.} = staticRead(PRELUDE_FILE)
 proc compress_str(s : string, preset = COMPRESSION_PRESET): Future[float64] {.async.}
 var PRELUDE_RATIO = 0.0
