@@ -2,8 +2,8 @@
 
 import pytest, os, jsonlines, csv
 from warnings import warn
-from zippy import Zippy, EnsembledZippy, PRELUDE_STR, LzmaLlmDetector, BrotliLlmDetector, ZlibLlmDetector, CompressionEngine
-import zippy
+from zippy.zippy import Zippy, EnsembledZippy, PRELUDE_STR, LzmaLlmDetector, BrotliLlmDetector, ZlibLlmDetector, CompressionEngine
+import zippy.zippy
 
 AI_SAMPLE_DIR = 'samples/llm-generated/'
 HUMAN_SAMPLE_DIR = 'samples/human-generated/'
