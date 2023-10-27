@@ -1,0 +1,4 @@
+# Needed for ensembling
+numpy
+# Needed for brotli compression
+brotli

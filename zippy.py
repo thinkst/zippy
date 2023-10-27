@@ -40,7 +40,7 @@ def clean_text(s : str) -> str:
 
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
 PRELUDE_FILE : str = 'ai-generated.txt'
-with open(PRELUDE_FILE, 'r') as fp:
+with open(PRELUDE_FILE, 'r', encoding='utf-8') as fp:
     PRELUDE_STR = clean_text(fp.read())
 
 class AIDetector(ABC):
@@ -62,7 +62,7 @@ class BrotliLlmDetector(AIDetector):
             self.prelude_ratio = prelude_ratio
         
         if prelude_file != None:
-            with open(prelude_file) as fp:
+            with open(prelude_file, encoding='utf-8') as fp:
                 self.prelude_str = clean_text(fp.read())
             self.prelude_ratio = self._compress(self.prelude_str)
             return
@@ -102,7 +102,7 @@ class ZlibLlmDetector(AIDetector):
             self.prelude_ratio = prelude_ratio
         
         if prelude_file != None:
-            with open(prelude_file) as fp:
+            with open(prelude_file, encoding='utf-8') as fp:
                 self.prelude_str = clean_text(fp.read())
             lines = self.prelude_str.split('\n')
             self.prelude_chunks = array_split(lines, ceil(len(self.prelude_str) / 2**abs(self.WBITS)))
@@ -153,7 +153,7 @@ class LzmaLlmDetector(AIDetector):
 
         if prelude_file != None:
             # Read it once to get the default compression ratio for the prelude
-            with open(prelude_file, 'r') as fp:
+            with open(prelude_file, 'r', encoding='utf-8') as fp:
                 self.prelude_str = fp.read()
             self.prelude_ratio = self._compress(self.prelude_str)
             return
@@ -212,7 +212,7 @@ class Zippy:
 
     def run_on_file(self, filename : str) -> Optional[Score]:
         '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
-        with open(filename, 'r') as fp:
+        with open(filename, 'r', encoding='utf-8') as fp:
             txt = fp.read()
             #print('Calculating score for input of length ' + str(len(txt)))
         return self.detector.score_text(txt)
@@ -230,7 +230,7 @@ class Zippy:
         This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
         being skewed because its compression ratio starts to overwhelm the prelude file.
         '''
-        with open(filename, 'r') as fp:
+        with open(filename, 'r', encoding='utf-8') as fp:
             contents = fp.read()
         return self.run_on_text_chunked(contents, chunk_size, prelude_ratio=prelude_ratio)
 
@@ -296,7 +296,7 @@ class EnsembledZippy:
 
     def run_on_file(self, filename : str) -> Optional[Score]:
         '''Given a filename (and an optional number of decimal places to round to) returns the score for the contents of that file'''
-        with open(filename, 'r') as fp:
+        with open(filename, 'r', encoding='utf-8') as fp:
             txt = fp.read()
         scores = []
         for c in self.component_classifiers:
@@ -315,7 +315,7 @@ class EnsembledZippy:
         This function chunks the file into at most chunk_size parts to score separately, then returns an average. This prevents a very large input
         being skewed because its compression ratio starts to overwhelm the prelude file.
         '''
-        with open(filename, 'r') as fp:
+        with open(filename, 'r', encoding='utf-8') as fp:
             contents = fp.read()
         return self.run_on_text_chunked(contents, chunk_size)
 
