@@ -330,7 +330,7 @@ class EnsembledZippy:
             scores.append(c.run_on_text_chunked(s, chunk_size=chunk_size))
         return self._combine_scores(scores)
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", required=False, help="Preset to use with compressor, higher values are slower but provide better compression")
     parser.add_argument("-e", choices=['zlib', 'lzma', 'brotli', 'ensemble'], help='Which compression engine to use: lzma, zlib, brotli, or an ensemble of all engines', default='lzma', required=False)
@@ -371,3 +371,6 @@ if __name__ == '__main__':
             print(f)
             if os.path.isfile(f):
                 print(str(z.run_on_file_chunked(f)))
+
+if __name__ == '__main__':
+    main()
