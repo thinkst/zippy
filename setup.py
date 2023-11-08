@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='ZipPy setup file',
-    version='0.1.1',
+    version='0.1.2',
     packages=['zippy'],
     package_data={"": ["*.txt"]},
     entry_points={
