@@ -32,7 +32,7 @@ ZipPy will read files passed as command-line arguments or will read from stdin t
 
 First, build and install the tool:
 ```
-$ python3 setup.py build && python3 setup.py install
+$ python3 setup.py build && python3 setup.py sdist && pip3 install dist/*.tar.gz
 ```
 
 It will install a new script (`zippy`) that you can use directly:
