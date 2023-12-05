@@ -26,18 +26,29 @@ Here are each of them compared with both the LZMA and zlib detector across the t
 
 ![ROC curve of detection tools](https://github.com/thinkst/zippy/blob/main/ai_detect_roc.png?raw=true)
 
+### Installation
+
+You can install zippy one of 2 ways:
+
+#### Using python
+
+```shell
+python3 setup.py build && python3 setup.py sdist && pip3 install dist/*.tar.gz
+```
+
+#### Using pkgx
+
+```shell
+pkgx install zippy # or run it directly `pkgx zippy -h`
+```
+
 ### Usage
 
 ZipPy will read files passed as command-line arguments or will read from stdin to allow for piping of text to it. 
 
-First, build and install the tool:
-```
-$ python3 setup.py build && python3 setup.py sdist && pip3 install dist/*.tar.gz
-```
+Once you've [installed](#Installation) zippy it will add a new script (`zippy`) that you can use directly:
 
-It will install a new script (`zippy`) that you can use directly:
-
-```
+```shell
 $ zippy -h
 usage: zippy [-h] [-p P] [-e {zlib,lzma,brotli,ensemble}] [-s | sample_files ...]
 
