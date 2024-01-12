@@ -28,13 +28,21 @@ Here are each of them compared with both the LZMA and zlib detector across the t
 
 ### Installation
 
-You can install zippy one of 2 ways:
+You can install zippy one of two ways:
 
-#### Using python
+#### Using python/pip
 
+Via pip:
+```shell
+pip3 install thinkst-zippy
+```
+
+Or from source:
 ```shell
 python3 setup.py build && python3 setup.py sdist && pip3 install dist/*.tar.gz
 ```
+
+Now you can `import zippy` in other scripts.
 
 #### Using pkgx
 
