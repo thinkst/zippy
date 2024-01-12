@@ -9,7 +9,7 @@ faster approximation to be embeddable and more scalable.
 ## Compression-based detector (`zippy.py` and `nlzmadetect`)
 
 ZipPy uses either the LZMA or zlib compression ratios as a way to indirectly measure the perplexity of a text.
-Compression ratios have been used in the past to [detect anomalies in network data](http://owncloud.unsri.ac.id/journal/security/ontheuse_compression_Network_anomaly_detec.pdf)
+Compression ratios have been used in the past to [detect anomalies in network data](https://ieeexplore.ieee.org/abstract/document/5199270)
 for intrusion detection, so if perplexity is roughly a measure of anomalous tokens, it may be possible to use compression to detect low-perplexity text.
 LZMA and zlib create a dictionary of seen tokens and then use though in place of future tokens. The dictionary size, token length, etc.
 are all dynamic (though influenced by the 'preset' of 0-9--with 0 being the fastest but worse compression than 9). The basic idea
