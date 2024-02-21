@@ -15,6 +15,7 @@ from math import ceil
 from typing import List, Optional, Tuple, TypeAlias
 from multiprocessing import Pool, cpu_count
 from importlib.resources import files
+from .__init__ import __version__
 
 Score : TypeAlias = tuple[str, float]
 
@@ -339,6 +340,7 @@ class EnsembledZippy:
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-v", required=False, action='store_true', help="Display the version and exit")
     parser.add_argument("-p", required=False, help="Preset to use with compressor, higher values are slower but provide better compression")
     parser.add_argument("-e", choices=['zlib', 'lzma', 'brotli', 'ensemble'], help='Which compression engine to use: lzma, zlib, brotli, or an ensemble of all engines', default='lzma', required=False)
     group = parser.add_mutually_exclusive_group()
@@ -346,6 +348,9 @@ def main():
     group.add_argument("sample_files", nargs='*', help='Text file(s) containing the sample to classify', default="")
     args = parser.parse_args()
     engine = 'lzma'
+    if args.v:
+        print(__version__)
+        return
     if args.e:
         if args.e == 'lzma':
             engine = CompressionEngine.LZMA
