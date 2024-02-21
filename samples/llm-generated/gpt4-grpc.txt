@@ -1,0 +1,45 @@
+Certainly! The provided image is a diagrammatic representation of how gRPC (Google Remote Procedure Call) works. Let's break it down step-by-step:
+
+ 1. Local Call vs. Remote Procedural Call:
+
+- Local Function Call: Within a single system or process, different components/modules (e.g., Order Management, Payment) can communicate with each other using local function calls.
+  
+- Remote Procedural Call (RPC): When you need to call a function that exists on a different server or service, you can use RPC. The image shows "Order Service" on Server A making an RPC to the "Payment Service" on Server B.
+
+ 2. gRPC Overall Flow:
+
+Client Side:
+
+1. REST Call: The process starts when a client application makes a REST call. REST (Representational State Transfer) is an architectural style that uses standard HTTP methods, but here it's used to initiate the gRPC process.
+
+2. Client Application: This represents the application making the RPC. It handles the initial request and also processes the result from the RPC.
+
+3. Encoding/Decoding: Before sending data over the network, the client application will encode the data into a format suitable for transmission. When it receives data, it will decode the data back into its original format. gRPC uses Protocol Buffers (ProtoBuf) for this purpose, which is a binary serialization protocol developed by Google.
+
+4. Client Stub: The stub is like a proxy or gateway for the client application. It communicates with the gRPC runtime to make the actual RPC.
+
+5. gRPC Runtime: It is responsible for managing the low-level details of making the RPC, such as connection management, encoding/decoding of ProtoBuf messages, etc.
+
+6. Transport: This is the communication channel or medium over which the encoded data will be sent. gRPC uses HTTP/2 as the transport protocol, which provides several advantages over the older HTTP/1.1, like multiplexing and smaller header sizes.
+
+Server Side:
+
+7. Server Application: The server-side application receives the RPC, processes it, and returns the result. In the diagram, this is represented by the "Payment Service."
+
+8. Local Call: Similar to the client-side, after decoding the received data, the server application may need to make local calls to complete the request.
+
+9. Encoding/Decoding: The server also needs to encode and decode data using ProtoBuf.
+
+10. Server Stub: This is similar to the client stub but resides on the server side. It acts as a gateway between the server application and the gRPC runtime.
+
+11. gRPC Runtime: On the server side, the gRPC runtime handles tasks like receiving the RPC, decoding the ProtoBuf message, and sending back the response.
+
+Flow of Communication:
+
+- The client application makes a REST call (Step 1).
+- The data is encoded and passed through the client stub and gRPC runtime (Steps 2-5).
+- The data is sent over HTTP/2 transport to the server (Step 6).
+- The server's gRPC runtime receives the data, and it's passed through the server stub (Steps 7-10).
+- The server application processes the request and returns the result, which travels back to the client through a similar process.
+
+In summary, gRPC is a high-performance, open-source, and universal RPC framework. This image illustrates how data flows in a gRPC system, starting from a client application making an RPC, traveling through various components, and ending at the server application that processes the request. The use of ProtoBuf ensures efficient data serialization and deserialization, and HTTP/2 as the transport protocol offers advantages in speed and multiplexing capabilities.
