@@ -79,7 +79,7 @@ for preset in PRESETS:
     roc_auc = auc(fpr, tpr)
 
     # Plot the ROC curve
-    plt.plot(fpr, tpr, lw=2, label=f'{MODEL.capitalize()}-{preset}: ROC curve (%Acc = {tp/len(cases):0.2f}; AUC = {roc_auc:0.2f})')
+    plt.plot(fpr, tpr, lw=2, label=f'{MODEL.split("-")[1].capitalize()}-{preset}: ROC curve (%Acc = {tp/len(cases):0.2f}; AUC = {roc_auc:0.2f})')
     plt.scatter(fpr[ix], tpr[ix], marker='o', color='black')#, label=model.capitalize() + ': Best @ threshold = %0.2f' % thresholds[ix])
 
 plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label="Random classifier")

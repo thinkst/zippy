@@ -17,20 +17,30 @@ human_files = os.listdir(HUMAN_SAMPLE_DIR)
 CONFIDENCE_THRESHOLD : float = 0.00 # What confidence to treat as error vs warning
 
 # Bool on whether to ensemble the models or run a single model
-ENSEMBLE = True
+ENSEMBLE = False
 
 if not ENSEMBLE:
     # What compression engine to use for the test
     ENGINE = CompressionEngine.LZMA
 
-    if ENGINE == CompressionEngine.LZMA:
-        PRELUDE_RATIO = LzmaLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
-    elif ENGINE == CompressionEngine.ZLIB:
-        PRELUDE_RATIO = ZlibLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
-    elif ENGINE == CompressionEngine.BROTLI:
-        PRELUDE_RATIO = BrotliLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
-
-    zippy = Zippy(ENGINE)
+    if os.environ.get('ZIPPY_PRESET') != None:
+        if ENGINE == CompressionEngine.LZMA:
+            PRELUDE_RATIO = LzmaLlmDetector(prelude_str=PRELUDE_STR, preset=int(os.environ.get('ZIPPY_PRESET'))).prelude_ratio
+        elif ENGINE == CompressionEngine.ZLIB:
+            PRELUDE_RATIO = ZlibLlmDetector(prelude_str=PRELUDE_STR, preset=int(os.environ.get('ZIPPY_PRESET'))).prelude_ratio
+        elif ENGINE == CompressionEngine.BROTLI:
+            PRELUDE_RATIO = BrotliLlmDetector(prelude_str=PRELUDE_STR, preset=int(os.environ.get('ZIPPY_PRESET'))).prelude_ratio
+    else:
+        if ENGINE == CompressionEngine.LZMA:
+            PRELUDE_RATIO = LzmaLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
+        elif ENGINE == CompressionEngine.ZLIB:
+            PRELUDE_RATIO = ZlibLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
+        elif ENGINE == CompressionEngine.BROTLI:
+            PRELUDE_RATIO = BrotliLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
+    if os.environ.get('ZIPPY_PRESET') != None:
+        zippy = Zippy(ENGINE, preset=int(os.environ.get('ZIPPY_PRESET')))
+    else:
+        zippy = Zippy(ENGINE)
 
 else:
     zippy = EnsembledZippy()
