@@ -38,9 +38,9 @@ if not ENSEMBLE:
         elif ENGINE == CompressionEngine.BROTLI:
             PRELUDE_RATIO = BrotliLlmDetector(prelude_str=PRELUDE_STR).prelude_ratio
     if os.environ.get('ZIPPY_PRESET') != None:
-        zippy = Zippy(ENGINE, preset=int(os.environ.get('ZIPPY_PRESET')))
+        zippy = Zippy(ENGINE, preset=int(os.environ.get('ZIPPY_PRESET'), normalize=True))
     else:
-        zippy = Zippy(ENGINE)
+        zippy = Zippy(ENGINE, normalize=True)
 
 else:
     zippy = EnsembledZippy()
