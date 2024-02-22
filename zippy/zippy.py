@@ -143,12 +143,14 @@ class ZlibLlmDetector(AIDetector):
 
 class LzmaLlmDetector(AIDetector):
     '''Class providing functionality to attempt to detect LLM/generative AI generated text using the LZMA compression algorithm'''
-    def __init__(self, prelude_file : Optional[str] = None, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None, preset : int = 4) -> None:
+    def __init__(self, prelude_file : Optional[str] = None, prelude_str : Optional[str] = None, prelude_ratio : Optional[float] = None, preset : int = 4, normalize : bool = False) -> None:
         '''Initializes a compression with the passed prelude file, and optionally the number of digits to round to compare prelude vs. sample compression'''
         self.PRESET : int = preset
         self.c_buf : List[bytes] = []
         self.in_bytes : int = 0
         self.prelude_ratio : float = 0.0
+        self.nf : float = 0.0
+
         if prelude_ratio != None:
             self.prelude_ratio = prelude_ratio
 
@@ -164,6 +166,8 @@ class LzmaLlmDetector(AIDetector):
             self.prelude_str = prelude_str
             if self.prelude_ratio == 0.0:
                 self.prelude_ratio = self._compress(prelude_str)
+        if normalize:
+            self.nf : float = self.prelude_ratio / len(self.prelude_str)
 
     def _compress(self, s : str) -> float:
         orig_len = len(s.encode())
@@ -181,7 +185,7 @@ class LzmaLlmDetector(AIDetector):
         if self.prelude_ratio == 0.0:
             return None
         #print('LZMA: ' + str((self.prelude_ratio, sample_score)))
-        delta = self.prelude_ratio - self._compress(self.prelude_str + sample)
+        delta = self.prelude_ratio - (self._compress(self.prelude_str + sample) - (self.nf * len(sample) * (len(sample) / len(self.prelude_str))))
         determination = 'AI'
         if delta < 0:
             determination = 'Human'
@@ -192,7 +196,7 @@ class Zippy:
     '''
     Class to wrap the functionality of Zippy
     '''
-    def __init__(self, engine : CompressionEngine = CompressionEngine.LZMA, preset : Optional[int] = None, prelude_file : str = PRELUDE_FILE) -> None:
+    def __init__(self, engine : CompressionEngine = CompressionEngine.LZMA, preset : Optional[int] = None, prelude_file : str = PRELUDE_FILE, normalize : bool = False) -> None:
         self.ENGINE = engine
         self.PRESET = preset
         if prelude_file == PRELUDE_FILE:
@@ -341,6 +345,7 @@ class EnsembledZippy:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", required=False, action='store_true', help="Display the version and exit")
+    parser.add_argument("-n", required=False, action='store_true', help="Normalize scoring based on length of sample compared to length of PRELUDE_FILE")
     parser.add_argument("-p", required=False, help="Preset to use with compressor, higher values are slower but provide better compression")
     parser.add_argument("-e", choices=['zlib', 'lzma', 'brotli', 'ensemble'], help='Which compression engine to use: lzma, zlib, brotli, or an ensemble of all engines', default='lzma', required=False)
     group = parser.add_mutually_exclusive_group()
@@ -348,6 +353,9 @@ def main():
     group.add_argument("sample_files", nargs='*', help='Text file(s) containing the sample to classify', default="")
     args = parser.parse_args()
     engine = 'lzma'
+    normalize = False
+    if args.n:
+        normalize = True
     if args.v:
         print(__version__)
         return
@@ -363,9 +371,9 @@ def main():
     if args.s:
         if engine:
             if args.p:
-                z = Zippy(engine, preset=int(args.p))
+                z = Zippy(engine, preset=int(args.p), normalize=normalize)
             else:
-                z = Zippy(engine)
+                z = Zippy(engine, normalize=normalize)
         else:
             z = EnsembledZippy()
         print(str(z.run_on_text_chunked(''.join(list(sys.stdin)))))
@@ -374,9 +382,9 @@ def main():
     else:
         if engine:
             if args.p:
-                z = Zippy(engine, preset=int(args.p))
+                z = Zippy(engine, preset=int(args.p), normalize=normalize)
             else:
-                z = Zippy(engine)
+                z = Zippy(engine, normalize=normalize)
         else:
             z = EnsembledZippy()
         for f in args.sample_files:
