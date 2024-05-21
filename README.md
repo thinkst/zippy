@@ -75,3 +75,21 @@ samples/human-generated/about_me.txt
 ```
 
 If you want to use the ZipPy technology in your browser, check out the [Chrome extension](https://chrome.google.com/webstore/detail/ai-noise-cancelling-headp/okghlbkbacncfnfcielbncabioedklcn) or the [Firefox extension](https://addons.mozilla.org/firefox/addon/ai-noise-cancelling-headphones/) that runs ZipPy in-browser to flag potentially AI-generated content.
+
+### Interpreting the results
+
+At its core, the output from ZipPy is purely a statistical comparison of the similarity between the LLM-generate corpus (or corpi)
+and the provided sample to test. Samples that are closer (i.e., more tokens match the known-LLM corpus) will score with higher confidence
+as AI-generated; samples that are less compressible to an LLM-trained compression dictionary are flagged as human-generated. There are
+a few caveats to the output that are worth noting:
+
+* The comparison is based on the similarity of the text, a different type of sample, e.g., in a different language, or with many fictional
+names, will be less similar to the English-languge corpus. Either a new LLM-generated corpus is needed, or a different (larger) toolchain
+that can handle multiple language types is needed. Using ZipPy as-built willl provide poor responses to non-English human language samples,
+computer language samples, and English samples that are not clear prose (or poetry).
+
+* The confidence score is a raw delta between the compression ratios for the prelude file (LLM-generated corpus), and the compression ratio with
+the sample included. Higher values indicate more similarity for AI-classified inputs, and more dissimilarity for those classified as human, but
+the scores are not a percentage or otherwise a point on a discrete range. A score of 0 means there is no indication either way, it is [possible in
+testing](https://github.com/thinkst/zippy/blob/main/test_zippy_detect.py#L17) to ignore results that are "too close", in the browser extensions
+these values are adjusted slightly before being used to calculate the transparency to err on the side of not hiding text.
