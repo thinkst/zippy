@@ -25,19 +25,15 @@ class CompressionEngine(Enum):
     BROTLI = 3
 
 # Precompile regex patterns for reuse
-SPACE_PATTERN = re.compile(' +')
-TAB_PATTERN = re.compile('\t')
-NEWLINE_PATTERN = re.compile('\n+')
-LEADING_NEWLINE_PATTERN = re.compile('\n ')
-TRAILING_NEWLINE_PATTERN = re.compile(' \n')
+WHITESPACE_PATTERN = re.compile(r'[ \t]+')
+NEWLINE_PATTERN = re.compile(r'\n+')
+LEADING_TRAILING_NEWLINE_PATTERN = re.compile(r'(\n )|( \n)')
 NON_ALNUM_PATTERN = re.compile(r'[^0-9A-Za-z,\.\(\) \n]')
 
 def clean_text(s: str) -> str:
-    s = SPACE_PATTERN.sub(' ', s)
-    s = TAB_PATTERN.sub('', s)
+    s = WHITESPACE_PATTERN.sub(' ', s)
     s = NEWLINE_PATTERN.sub('\n', s)
-    s = LEADING_NEWLINE_PATTERN.sub('\n', s)
-    s = TRAILING_NEWLINE_PATTERN.sub('\n', s)
+    s = LEADING_TRAILING_NEWLINE_PATTERN.sub('\n', s)
     s = NON_ALNUM_PATTERN.sub('', s)
     return s
 
