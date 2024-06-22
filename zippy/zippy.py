@@ -24,20 +24,21 @@ class CompressionEngine(Enum):
     ZLIB = 2
     BROTLI = 3
 
-def clean_text(s : str) -> str:
-    '''
-    Removes formatting and other non-content data that may skew compression ratios (e.g., duplicate spaces)
-    '''
-    # Remove extra spaces and duplicate newlines.
-    s = re.sub(' +', ' ', s)
-    s = re.sub('\t', '', s)
-    s = re.sub('\n+', '\n', s)
-    s = re.sub('\n ', '\n', s)
-    s = re.sub(' \n', '\n', s)
+# Precompile regex patterns for reuse
+SPACE_PATTERN = re.compile(' +')
+TAB_PATTERN = re.compile('\t')
+NEWLINE_PATTERN = re.compile('\n+')
+LEADING_NEWLINE_PATTERN = re.compile('\n ')
+TRAILING_NEWLINE_PATTERN = re.compile(' \n')
+NON_ALNUM_PATTERN = re.compile(r'[^0-9A-Za-z,\.\(\) \n]')
 
-    # Remove non-alphanumeric chars
-    s = re.sub(r'[^0-9A-Za-z,\.\(\) \n]', '', s)#.lower()
-
+def clean_text(s: str) -> str:
+    s = SPACE_PATTERN.sub(' ', s)
+    s = TAB_PATTERN.sub('', s)
+    s = NEWLINE_PATTERN.sub('\n', s)
+    s = LEADING_NEWLINE_PATTERN.sub('\n', s)
+    s = TRAILING_NEWLINE_PATTERN.sub('\n', s)
+    s = NON_ALNUM_PATTERN.sub('', s)
     return s
 
 # The prelude file is a text file containing only AI-generated text, it is used to 'seed' the LZMA dictionary
