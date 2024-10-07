@@ -6,9 +6,15 @@ its training data to calculate the probability of each word given the preceding,
 the more high-probability tokens are more likely to be AI-originated. Techniques and tools in this repo are looking for
 faster approximation to be embeddable and more scalable.
 
+### Additional resources
+
+Below are some other places to learn about ZipPy:
+* [Blog post about ZipPy](https://blog.thinkst.com/2023/06/meet-zippy-a-fast-ai-llm-text-detector.html)
+* [Hack.LU talk video](https://www.youtube.com/watch?v=CIdVix6k5Jw)
+
 ## Compression-based detector (`zippy.py` and `nlzmadetect`)
 
-ZipPy uses either the LZMA or zlib compression ratios as a way to indirectly measure the perplexity of a text.
+ZipPy uses either the LZMA, Brotli, or zlib compression ratios as a way to indirectly measure the perplexity of a text.
 Compression ratios have been used in the past to [detect anomalies in network data](https://ieeexplore.ieee.org/abstract/document/5199270)
 for intrusion detection, so if perplexity is roughly a measure of anomalous tokens, it may be possible to use compression to detect low-perplexity text.
 LZMA and zlib create a dictionary of seen tokens and then use though in place of future tokens. The dictionary size, token length, etc.
