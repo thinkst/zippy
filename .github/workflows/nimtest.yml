@@ -19,6 +19,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install PCRE3
+      run: |
+        apt -y update && apt install -y libpcre3
     - name: Set up Nim
       run: |
         curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
