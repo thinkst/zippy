@@ -19,9 +19,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Install PCRE3
+    - name: Install deps
       run: |
-        sudo apt-get install -y libpcre3
+        sudo apt-get install -y libpcre3 liblzma-dev
     - name: Set up Nim
       run: |
         curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
