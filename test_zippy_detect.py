@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pytest, os, jsonlines, csv
+import pytest, os, jsonlines, csv, random
 from warnings import warn
 from zippy.zippy import Zippy, EnsembledZippy, PRELUDE_STR, LzmaLlmDetector, BrotliLlmDetector, ZlibLlmDetector, CompressionEngine
 import zippy.zippy
@@ -13,6 +13,8 @@ NUM_JSONL_SAMPLES = 500
 
 ai_files = os.listdir(AI_SAMPLE_DIR)
 human_files = os.listdir(HUMAN_SAMPLE_DIR)
+
+random.seed('ZIPPY TESTING SEED') # Allow for randomizing the test sets, but with a fixed seen for repeatability
 
 CONFIDENCE_THRESHOLD : float = 0.00 # What confidence to treat as error vs warning
 
@@ -204,3 +206,24 @@ def test_gptzero_eval_dataset_ai(i, record_property):
     (classification, score) = zippy.run_on_text_chunked(i.get('Document', ''), prelude_ratio=PRELUDE_RATIO)
     record_property("score", str(score))
     assert classification == i.get('Label'), GPTZERO_EVAL_FILE + ':' + str(i.get('Index')) + ' was misclassified with confidence ' + str(round(score, 8))
+
+ORIGINALITY_EVAL_FILE = 'samples/originality-2000_samples_benchmark.csv'
+originality_samples = []
+with open(ORIGINALITY_EVAL_FILE) as fp:
+    csvr = csv.DictReader(fp)
+
+    for obj in csvr:
+        if len(obj.get('text', '')) >= MIN_LEN:
+            originality_samples.append(obj)
+
+@pytest.mark.parametrize('i', random.sample(list(filter(lambda x: x.get('label') == 'human-written', originality_samples)), NUM_JSONL_SAMPLES))
+def test_originality_eval_dataset_human(i, record_property):
+    (classification, score) = zippy.run_on_text_chunked(i.get('text', ''), prelude_ratio=PRELUDE_RATIO)
+    record_property("score", str(score))
+    assert classification == 'Human', ORIGINALITY_EVAL_FILE + ':' + str(i.get('dataset')) + ' was misclassified with confidence ' + str(round(score, 8))
+
+@pytest.mark.parametrize('i', random.sample(list(filter(lambda x: x.get('label') == 'ai-generated' and x.get('dataset') != 'paraphrase', originality_samples)), NUM_JSONL_SAMPLES))
+def test_originality_eval_dataset_ai(i, record_property):
+    (classification, score) = zippy.run_on_text_chunked(i.get('text', ''), prelude_ratio=PRELUDE_RATIO)
+    record_property("score", str(score))
+    assert classification == 'AI', ORIGINALITY_EVAL_FILE + ':' + str(i.get('dataset')) + ' was misclassified with confidence ' + str(round(score, 8))
